@@ -39,7 +39,7 @@ Kubernetes-deployed Jellyfin media server with distributed transcoding using rff
 
 ## Quick Start
 
-1. **Add the Helm repository** (when published):
+1. **Add the Helm repository**:
    ```bash
    helm repo add clusterjellyfin https://celesrenata.github.io/clusterjellyfin
    helm repo update
