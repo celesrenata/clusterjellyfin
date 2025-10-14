@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "clusterjellyfin.fullname" . }}-main
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "clusterjellyfin.labels" . | nindent 4 }}
+    component: main
+spec:
+  replicas: {{ .Values.jellyfin.replicas }}
+  selector:
+    matchLabels:
+      {{- include "clusterjellyfin.selectorLabels" . | nindent 6 }}
+      component: main
+  template:
+    metadata:
+      labels:
+        {{- include "clusterjellyfin.selectorLabels" . | nindent 8 }}
+        component: main
+    spec:
+      securityContext:
+        runAsUser: {{ .Values.securityContext.runAsUser }}
+        runAsGroup: {{ .Values.securityContext.runAsGroup }}
+        fsGroup: {{ .Values.securityContext.fsGroup }}
+      initContainers:
+      - name: install-rffmpeg
+        image: python:3.11-slim
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          set -e
+          apt update && apt install -y wget
+          wget -O /shared/rffmpeg-real https://raw.githubusercontent.com/joshuaboniface/rffmpeg/master/rffmpeg
+          chmod +x /shared/rffmpeg-real
+          cat > /shared/rffmpeg << 'EOF'
+          #!/bin/bash
+          case "$1" in
+              -version|-f|-formats|-codecs|-decoders|-encoders|-bsfs|-protocols|-filters|-pix_fmts|-layouts|-sample_fmts)
+                  exec /usr/lib/jellyfin-ffmpeg/ffmpeg "$@"
+                  ;;
+              *)
+                  exec /shared/rffmpeg-real "$@"
+                  ;;
+          esac
+          EOF
+          chmod +x /shared/rffmpeg
+          echo "Init container completed successfully"
+        volumeMounts:
+        - name: shared-rffmpeg
+          mountPath: /shared
+      containers:
+      - name: jellyfin
+        image: "{{ .Values.image.jellyfin.repository }}:{{ .Values.image.jellyfin.tag }}"
+        imagePullPolicy: {{ .Values.image.jellyfin.pullPolicy }}
+        securityContext:
+          runAsUser: {{ .Values.securityContext.runAsUser }}
+        env:
+        - name: JELLYFIN_PublishedServerUrl
+          value: "http://{{ include "clusterjellyfin.fullname" . }}.{{ .Values.namespace }}.svc.cluster.local:{{ .Values.service.port }}"
+        ports:
+        - containerPort: 8096
+        - containerPort: 8920
+        - containerPort: 1900
+          protocol: UDP
+        - containerPort: 7359
+          protocol: UDP
+        volumeMounts:
+        - name: jellyfin-config
+          mountPath: /config
+        - name: jellyfin-cache
+          mountPath: /cache
+        - name: jellyfin-media
+          mountPath: /media
+        - name: shared-rffmpeg
+          mountPath: /shared
+        - name: rffmpeg-config
+          mountPath: /config/rffmpeg.yml
+          subPath: rffmpeg.yml
+        - name: shared-rffmpeg
+          mountPath: /usr/local/bin/rffmpeg
+          subPath: rffmpeg
+        resources:
+          {{- toYaml .Values.jellyfin.resources | nindent 10 }}
+      volumes:
+      - name: jellyfin-config
+        persistentVolumeClaim:
+          claimName: {{ include "clusterjellyfin.fullname" . }}-config
+      - name: jellyfin-cache
+        persistentVolumeClaim:
+          claimName: {{ include "clusterjellyfin.fullname" . }}-cache
+      - name: jellyfin-media
+        persistentVolumeClaim:
+          claimName: {{ include "clusterjellyfin.fullname" . }}-media
+      - name: shared-rffmpeg
+        emptyDir: {}
+      - name: rffmpeg-config
+        configMap:
+          name: {{ include "clusterjellyfin.fullname" . }}-rffmpeg-config

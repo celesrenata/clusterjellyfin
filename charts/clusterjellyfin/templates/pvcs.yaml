@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "clusterjellyfin.fullname" . }}-config
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "clusterjellyfin.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.jellyfin.storage.config.accessMode }}
+  {{- if .Values.jellyfin.storage.config.storageClass }}
+  storageClassName: {{ .Values.jellyfin.storage.config.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.jellyfin.storage.config.size }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "clusterjellyfin.fullname" . }}-cache
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "clusterjellyfin.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.jellyfin.storage.cache.accessMode }}
+  {{- if .Values.jellyfin.storage.cache.storageClass }}
+  storageClassName: {{ .Values.jellyfin.storage.cache.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.jellyfin.storage.cache.size }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "clusterjellyfin.fullname" . }}-media
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "clusterjellyfin.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .Values.jellyfin.storage.media.accessMode }}
+  {{- if .Values.jellyfin.storage.media.storageClass }}
+  storageClassName: {{ .Values.jellyfin.storage.media.storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.jellyfin.storage.media.size }}
