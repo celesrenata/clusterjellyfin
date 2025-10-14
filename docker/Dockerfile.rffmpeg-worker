@@ -18,10 +18,11 @@ RUN apt-get update && apt-get install -y \
 # Create jellyfin user (or use existing)
 RUN id jellyfin || useradd -m -u 1001 -s /bin/bash jellyfin
 
-# Configure SSH
+# Configure SSH and generate host keys
 RUN mkdir /var/run/sshd && \
     sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config && \
-    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config
+    sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config && \
+    ssh-keygen -A
 
 # Setup SSH for jellyfin user
 RUN mkdir -p /home/jellyfin/.ssh && \
