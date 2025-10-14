@@ -31,7 +31,6 @@ spec:
                 {{- toYaml .Values.workers.nodeSelector.nodes | nindent 16 }}
       {{- end }}
       securityContext:
-        privileged: true
         runAsUser: {{ .Values.securityContext.runAsUser }}
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
         fsGroup: {{ .Values.securityContext.fsGroup }}
@@ -57,6 +56,8 @@ spec:
       - name: rffmpeg-worker
         image: "{{ .Values.image.worker.repository }}:{{ .Values.image.worker.tag }}"
         imagePullPolicy: {{ .Values.image.worker.pullPolicy }}
+        securityContext:
+          privileged: true
         env:
         - name: LIBVA_DRIVER_NAME
           value: "iHD"
