@@ -30,8 +30,8 @@ spec:
         - |
           set -e
           apt update && apt install -y wget
-          wget -O /shared/rffmpeg-real https://raw.githubusercontent.com/joshuaboniface/rffmpeg/master/rffmpeg
-          chmod +x /shared/rffmpeg-real
+          # Download rffmpeg content and embed it in wrapper script
+          wget -O /tmp/rffmpeg-real https://raw.githubusercontent.com/joshuaboniface/rffmpeg/master/rffmpeg
           cat > /shared/rffmpeg << 'EOF'
           #!/bin/bash
           case "$1" in
@@ -39,10 +39,14 @@ spec:
                   exec /usr/lib/jellyfin-ffmpeg/ffmpeg "$@"
                   ;;
               *)
-                  exec /shared/rffmpeg-real "$@"
+                  # Embedded rffmpeg script starts here
+EOF
+          # Append the actual rffmpeg script content (skip the shebang line)
+          tail -n +2 /tmp/rffmpeg-real >> /shared/rffmpeg
+          cat >> /shared/rffmpeg << 'EOF'
                   ;;
           esac
-          EOF
+EOF
           chmod +x /shared/rffmpeg
           echo "Init container completed successfully"
         volumeMounts:
