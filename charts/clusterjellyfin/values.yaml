@@ -29,6 +29,9 @@ jellyfin:
       size: 10Gi
       storageClass: ""
       accessMode: ReadWriteOnce
+      nfs:
+        server: "192.168.42.8"
+        path: "/volume1/Kubernetes/jellyfin/config"
     cache:
       size: 50Gi
       storageClass: ""
