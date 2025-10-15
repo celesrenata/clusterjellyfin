@@ -34,6 +34,9 @@ jellyfin:
       size: 1Ti
       storageClass: ""
       accessMode: ReadWriteMany
+      nfs:
+        server: "192.168.42.8"
+        path: "/volume1/Plex"
 
 workers:
   # Worker nodes for distributed transcoding
