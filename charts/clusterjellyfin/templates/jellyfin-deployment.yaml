@@ -25,6 +25,9 @@ spec:
       initContainers:
       - name: install-rffmpeg
         image: python:3.11-slim
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
         command: ["/bin/bash", "-c"]
         args:
         - |
