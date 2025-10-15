@@ -1,62 +1,55 @@
 # ClusterJellyfin
 
-Kubernetes-deployed Jellyfin media server with distributed transcoding using rffmpeg to load-balance Intel Arc QSV hardware acceleration across multiple worker nodes for scalable performance.
+Distributed Jellyfin deployment with remote transcoding workers using rffmpeg.
 
 ## Features
 
-- **Distributed Transcoding**: Uses rffmpeg to distribute transcoding workload across multiple worker nodes
-- **Intel Arc QSV Acceleration**: Hardware-accelerated transcoding on Intel Arc GPUs
-- **Scalable Architecture**: Main Jellyfin instance handles UI/API, workers handle transcoding
-- **Helm Chart**: Easy deployment and configuration via Helm
-- **Container Images**: Pre-built Docker images available on GitHub Container Registry
+- **Distributed Transcoding**: Main Jellyfin instance delegates transcoding to worker pods via SSH
+- **Hardware Acceleration**: Workers support Intel QSV, NVIDIA CUDA, AMD VAAPI
+- **Auto-scaling**: StatefulSet workers with configurable replica count
+- **Load Balancing**: Automatic distribution of transcoding jobs across available workers
+- **Persistent Storage**: NFS and Longhorn support for media, config, and cache
 
 ## Architecture
 
 ```
-┌─────────────────┐    ┌─────────────────┐
-│   Jellyfin      │    │   rffmpeg       │
-│   Main          │───▶│   Worker 1      │
-│   (UI/API)      │    │   (Intel Arc)   │
-└─────────────────┘    └─────────────────┘
-                       ┌─────────────────┐
-                       │   rffmpeg       │
-                       │   Worker 2      │
-                       │   (Intel Arc)   │
-                       └─────────────────┘
-                       ┌─────────────────┐
-                       │   rffmpeg       │
-                       │   Worker 3      │
-                       │   (Intel Arc)   │
-                       └─────────────────┘
+┌─────────────────┐    SSH/rffmpeg    ┌─────────────────┐
+│   Jellyfin      │ ─────────────────▶ │   Worker Pods   │
+│   Main Pod      │                   │                 │
+│   (Web UI)      │                   │   FFmpeg +      │
+└─────────────────┘                   │   HW Accel      │
+                                      └─────────────────┘
 ```
-
-## Prerequisites
-
-- Kubernetes cluster with nodes that have Intel Arc GPUs
-- Intel GPU device plugin installed
-- Helm 3.x
-- Storage classes for persistent volumes
 
 ## Quick Start
 
-1. **Add the Helm repository**:
+### Prerequisites
+
+- Kubernetes cluster
+- Helm 3.x
+- NFS server (optional, for shared storage)
+
+### Installation
+
+1. **Add the Helm repository:**
    ```bash
    helm repo add clusterjellyfin https://celesrenata.github.io/clusterjellyfin
    helm repo update
    ```
 
-2. **Install ClusterJellyfin**:
+2. **Install ClusterJellyfin:**
    ```bash
    helm install jellyfin clusterjellyfin/clusterjellyfin \
+     --namespace jellyfin-system \
      --create-namespace \
-     --namespace jellyfin \
-     --set workers.nodeSelector.nodes[0]=node-with-arc-gpu-1 \
-     --set workers.nodeSelector.nodes[1]=node-with-arc-gpu-2
+     --set workers.gpu.enabled=false \
+     --set workers.privileged=true \
+     --set service.type=ClusterIP
    ```
 
-3. **Access Jellyfin**:
+3. **Access Jellyfin:**
    ```bash
-   kubectl port-forward -n jellyfin svc/jellyfin-main 8096:8096
+   kubectl port-forward -n jellyfin-system svc/jellyfin-clusterjellyfin-main 8096:8096
    ```
    Open http://localhost:8096
 
@@ -64,72 +57,180 @@ Kubernetes-deployed Jellyfin media server with distributed transcoding using rff
 
 ### Basic Configuration
 
-```yaml
-# values.yaml
-workers:
-  replicas: 3
-  nodeSelector:
-    nodes:
-      - gpu-node-1
-      - gpu-node-2
-      - gpu-node-3
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `workers.replicas` | Number of transcoding workers | `3` |
+| `workers.privileged` | Enable privileged mode for GPU access | `false` |
+| `workers.gpu.enabled` | Enable GPU support | `false` |
+| `service.type` | Service type (ClusterIP/LoadBalancer/NodePort) | `ClusterIP` |
 
-jellyfin:
-  storage:
-    media:
-      size: 2Ti
-      storageClass: "fast-ssd"
+### Storage Configuration
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `storage.config.storageClass` | Storage class for config | `""` (NFS) |
+| `storage.config.size` | Config storage size | `10Gi` |
+| `storage.media.storageClass` | Storage class for media | `""` (NFS) |
+| `storage.media.size` | Media storage size | `1Ti` |
+| `storage.cache.storageClass` | Storage class for cache | `longhorn` |
+| `storage.cache.size` | Cache storage size | `50Gi` |
+
+### GPU Support
+
+For NVIDIA GPU support:
+```bash
+helm install jellyfin clusterjellyfin/clusterjellyfin \
+  --set workers.gpu.enabled=true \
+  --set workers.privileged=true \
+  --set workers.resources.limits."nvidia\.com/gpu"=1
 ```
 
-### Advanced Configuration
+For Intel GPU support:
+```bash
+helm install jellyfin clusterjellyfin/clusterjellyfin \
+  --set workers.privileged=true \
+  --set workers.resources.limits."gpu\.intel\.com/i915"=1
+```
 
-See [values.yaml](charts/clusterjellyfin/values.yaml) for all available options.
+## Advanced Configuration
 
-## Storage Requirements
+### Custom Values File
 
-- **Config**: 10Gi (Jellyfin configuration and metadata)
-- **Cache**: 50Gi (Transcoding cache)
-- **Media**: Variable (Your media library)
+Create `values.yaml`:
+```yaml
+workers:
+  replicas: 5
+  privileged: true
+  gpu:
+    enabled: true
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+    requests:
+      cpu: 1000m
+      memory: 2Gi
 
-## GPU Requirements
+storage:
+  config:
+    storageClass: "longhorn"
+  media:
+    storageClass: "nfs-client"
+    size: "5Ti"
 
-Each worker node should have:
-- Intel Arc GPU (A380, A750, A770, etc.)
-- Intel GPU device plugin installed
-- Proper drivers and runtime
+service:
+  type: LoadBalancer
+  annotations:
+    metallb.universe.tf/address-pool: default
+```
+
+Install with custom values:
+```bash
+helm install jellyfin clusterjellyfin/clusterjellyfin \
+  --namespace jellyfin-system \
+  --create-namespace \
+  -f values.yaml
+```
+
+### NFS Storage Setup
+
+For NFS storage, ensure your cluster has NFS support and update the PV configuration:
+```yaml
+nfs:
+  server: "192.168.1.100"
+  configPath: "/mnt/jellyfin/config"
+  mediaPath: "/mnt/jellyfin/media"
+```
+
+## Distributed Transcoding
+
+ClusterJellyfin uses rffmpeg to distribute transcoding jobs:
+
+1. **Validation calls** (`-version`, `-codecs`, etc.) run locally on main pod
+2. **Transcoding jobs** are distributed to worker pods via SSH
+3. **Load balancing** automatically spreads jobs across available workers
+4. **Hardware acceleration** is available on worker pods
+
+### Monitoring Transcoding
+
+Check worker pod logs:
+```bash
+kubectl logs -n jellyfin-system jellyfin-clusterjellyfin-workers-0
+```
+
+Test distributed transcoding:
+```bash
+kubectl exec -n jellyfin-system deployment/jellyfin-clusterjellyfin-main -- \
+  /usr/local/bin/rffmpeg -f lavfi -i testsrc=duration=1:size=320x240:rate=1 -c:v libx264 -f null -
+```
+
+## Troubleshooting
+
+### Check Pod Status
+```bash
+kubectl get pods -n jellyfin-system
+```
+
+### Check SSH Connectivity
+```bash
+kubectl exec -n jellyfin-system deployment/jellyfin-clusterjellyfin-main -- \
+  ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa \
+  jellyfin@jellyfin-clusterjellyfin-workers "echo 'SSH works'"
+```
+
+### Check Storage
+```bash
+kubectl get pv,pvc -n jellyfin-system
+```
+
+### View Logs
+```bash
+# Main pod logs
+kubectl logs -n jellyfin-system deployment/jellyfin-clusterjellyfin-main
+
+# Worker pod logs
+kubectl logs -n jellyfin-system jellyfin-clusterjellyfin-workers-0
+```
+
+## Upgrading
+
+```bash
+helm repo update
+helm upgrade jellyfin clusterjellyfin/clusterjellyfin --namespace jellyfin-system
+```
+
+## Uninstalling
+
+```bash
+helm uninstall jellyfin --namespace jellyfin-system
+kubectl delete namespace jellyfin-system
+```
 
 ## Development
 
-### Building Images Locally
+### Building from Source
 
 ```bash
-# Build main image
-docker build -f docker/Dockerfile.jellyfin-rffmpeg -t clusterjellyfin-main docker/
-
-# Build worker image  
-docker build -f docker/Dockerfile.rffmpeg-worker -t clusterjellyfin-worker docker/
+git clone https://github.com/celesrenata/clusterjellyfin
+cd clusterjellyfin
+helm package charts/clusterjellyfin
+helm install jellyfin ./clusterjellyfin-*.tgz --namespace jellyfin-system --create-namespace
 ```
 
-### Testing Helm Chart
-
-```bash
-helm template jellyfin charts/clusterjellyfin --values charts/clusterjellyfin/values.yaml
-```
-
-## Contributing
+### Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test with your Kubernetes cluster
+4. Test with `helm lint` and `helm template`
 5. Submit a pull request
 
 ## License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+MIT License - see LICENSE file for details.
 
 ## Acknowledgments
 
 - [Jellyfin](https://jellyfin.org/) - The media server
 - [rffmpeg](https://github.com/joshuaboniface/rffmpeg) - Remote FFmpeg execution
-- Intel Arc GPU support in FFmpeg
+- [Kubernetes](https://kubernetes.io/) - Container orchestration
+- [Helm](https://helm.sh/) - Package manager for Kubernetes
