@@ -1,24 +1,29 @@
 FROM ubuntu:24.04
 
-# Add Jellyfin repository
-RUN apt-get update && apt-get install -y curl gpg && \
+# Add Intel graphics repository and install dependencies
+RUN apt-get update && apt-get install -y software-properties-common curl gpg && \
     curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/jellyfin.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture)] https://repo.jellyfin.org/ubuntu noble main" | tee /etc/apt/sources.list.d/jellyfin.list
+    echo "deb [arch=$(dpkg --print-architecture)] https://repo.jellyfin.org/ubuntu noble main" | tee /etc/apt/sources.list.d/jellyfin.list && \
+    add-apt-repository -y ppa:kobuk-team/intel-graphics
 
-# Install dependencies and Intel hardware acceleration packages
+# Install dependencies and Intel Arc XE drivers
 RUN apt-get update && apt-get install -y \
     jellyfin-ffmpeg7 \
     openssh-server \
+    libze-intel-gpu1 \
+    libze1 \
+    intel-metrics-discovery \
+    intel-opencl-icd \
+    clinfo \
+    intel-gsc \
     intel-media-va-driver-non-free \
-    i965-va-driver \
-    libva2 \
-    libva-drm2 \
-    libva-x11-2 \
-    libdrm-intel1 \
+    libmfx-gen1 \
+    libvpl2 \
+    libvpl-tools \
+    libva-glx2 \
+    va-driver-all \
     vainfo \
     intel-gpu-tools \
-    ocl-icd-libopencl1 \
-    intel-opencl-icd \
     libnuma1 \
     && rm -rf /var/lib/apt/lists/*
 
