@@ -40,6 +40,10 @@ spec:
         command: ["/bin/bash", "-c"]
         args:
         - |
+          # Generate SSH host keys
+          ssh-keygen -A
+          
+          # Setup user SSH keys
           mkdir -p /home/jellyfin/.ssh
           cp /ssh-keys/* /home/jellyfin/.ssh/
           chmod 700 /home/jellyfin/.ssh
