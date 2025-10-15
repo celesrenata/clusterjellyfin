@@ -101,7 +101,7 @@ ingress:
       secretName: jellyfin-cert
   httpsAnnotations:
     traefik.ingress.kubernetes.io/router.entrypoints: websecure
-    cert-manager.io/cluster-issuer: ca-issuer
+    cert-manager.io/cluster-issuer: celestium-le-production
 
 # Security context
 securityContext:
