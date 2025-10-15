@@ -24,8 +24,9 @@ data:
       path: /config/rffmpeg.db
     
     hosts:
+      {{- $root := . }}
       {{- range $i := until (int .Values.workers.replicas) }}
-      - host: {{ .Values.rffmpeg.config.ssh.user }}@{{ include "clusterjellyfin.fullname" $ }}-workers-{{ $i }}.{{ include "clusterjellyfin.fullname" $ }}-workers-headless.{{ $.Release.Namespace }}.svc.cluster.local
+      - host: {{ $root.Values.rffmpeg.config.ssh.user }}@{{ include "clusterjellyfin.fullname" $root }}-workers-{{ $i }}.{{ include "clusterjellyfin.fullname" $root }}-workers-headless.{{ $root.Release.Namespace }}.svc.cluster.local
         weight: 1
       {{- end }}
 ---
