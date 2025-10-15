@@ -46,7 +46,7 @@ spec:
           {{- range $i := until (int .Values.workers.replicas) }}
           WORKERS+=("{{ include "clusterjellyfin.fullname" $ }}-workers-{{ $i }}.{{ include "clusterjellyfin.fullname" $ }}-workers.{{ $.Release.Namespace }}.svc.cluster.local")
           {{- end }}
-          SSH_USER="ubuntu"
+          SSH_USER="jellyfin"
           
           # Check for validation flags
           case "${1:-}" in
