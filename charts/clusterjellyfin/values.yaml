@@ -34,8 +34,8 @@ jellyfin:
         path: "/volume1/Kubernetes/jellyfin/config"
     cache:
       size: 50Gi
-      storageClass: ""
-      accessMode: ReadWriteOnce
+      storageClass: "longhorn"
+      accessMode: ReadWriteMany
     media:
       size: 1Ti
       storageClass: ""
