@@ -20,6 +20,9 @@ jellyfin:
       cpu: 2000m
       memory: 4Gi
   
+  # Jellyfin configuration
+  publishedServerUrl: "https://jellyfin.celestium.life"
+  
   # Storage configuration
   storage:
     config:

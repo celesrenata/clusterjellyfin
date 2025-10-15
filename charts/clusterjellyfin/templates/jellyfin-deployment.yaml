@@ -63,7 +63,7 @@ spec:
           runAsUser: {{ .Values.securityContext.runAsUser }}
         env:
         - name: JELLYFIN_PublishedServerUrl
-          value: "http://{{ include "clusterjellyfin.fullname" . }}.{{ .Release.Namespace }}.svc.cluster.local:{{ .Values.service.port }}"
+          value: "{{ .Values.jellyfin.publishedServerUrl }}"
         ports:
         - containerPort: 8096
         - containerPort: 8920
