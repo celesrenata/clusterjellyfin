@@ -37,8 +37,8 @@ spec:
           wget -O /tmp/rffmpeg-real https://raw.githubusercontent.com/joshuaboniface/rffmpeg/master/rffmpeg
           cat > /shared/rffmpeg << 'SCRIPT_END'
           #!/bin/bash
-          case "$1" in
-              -version|-f|-formats|-codecs|-decoders|-encoders|-bsfs|-protocols|-filters|-pix_fmts|-layouts|-sample_fmts)
+          case "${1:-}" in
+              ""|"-version"|"-f"|"-formats"|"-codecs"|"-decoders"|"-encoders"|"-bsfs"|"-protocols"|"-filters"|"-pix_fmts"|"-layouts"|"-sample_fmts")
                   exec /usr/lib/jellyfin-ffmpeg/ffmpeg "$@"
                   ;;
               *)
