@@ -10,8 +10,11 @@ RUN apt-get update && apt-get install -y \
     jellyfin-ffmpeg7 \
     openssh-server \
     intel-media-va-driver-non-free \
-    intel-media-driver \
     i965-va-driver \
+    libva2 \
+    libva-drm2 \
+    libva-x11-2 \
+    libdrm-intel1 \
     vainfo \
     intel-gpu-tools \
     ocl-icd-libopencl1 \
