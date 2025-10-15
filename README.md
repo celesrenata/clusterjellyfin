@@ -14,7 +14,7 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg.
 
 ```
 ┌─────────────────┐    SSH/rffmpeg    ┌─────────────────┐
-│   Jellyfin      │ ─────────────────▶ │   Worker Pods   │
+│   Jellyfin      │ ────────────────▶ │   Worker Pods   │
 │   Main Pod      │                   │                 │
 │   (Web UI)      │                   │   FFmpeg +      │
 └─────────────────┘                   │   HW Accel      │
