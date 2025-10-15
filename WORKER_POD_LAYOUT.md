@@ -39,9 +39,9 @@ All worker pods are running successfully with complete hardware acceleration sup
 │   Main Pod      │           │                 │
 │   (rffmpeg)     │           │   SSH Daemon    │
 └─────────────────┘           │   jellyfin-     │
-                               │   ffmpeg        │
-                               │   (HW Accel)    │
-                               └─────────────────┘
+                              │   ffmpeg        │
+                              │   (HW Accel)    │
+                              └─────────────────┘
 ```
 
 ## Next Steps Required
