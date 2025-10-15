@@ -60,7 +60,7 @@ spec:
           # Generate worker list dynamically
           WORKERS=()
           {{- range $i := until (int .Values.workers.replicas) }}
-          WORKERS+=("{{ include "clusterjellyfin.fullname" $ }}-workers-{{ $i }}.{{ include "clusterjellyfin.fullname" $ }}-workers")
+          WORKERS+=("{{ include "clusterjellyfin.fullname" $ }}-workers-{{ $i }}")
           {{- end }}
           SSH_USER="jellyfin"
           
