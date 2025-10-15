@@ -52,6 +52,8 @@ spec:
         volumeMounts:
         - name: ssh-keys
           mountPath: /ssh-keys
+        - name: ssh-host-keys
+          mountPath: /etc/ssh
         - name: ssh-home
           mountPath: /home/jellyfin/.ssh
         securityContext:
@@ -70,6 +72,8 @@ spec:
         volumeMounts:
         - name: ssh-home
           mountPath: /home/jellyfin/.ssh
+        - name: ssh-host-keys
+          mountPath: /etc/ssh
         - name: dev-dri
           mountPath: /dev/dri
         {{- if .Values.workers.gpu.enabled }}
@@ -89,6 +93,8 @@ spec:
         secret:
           secretName: {{ include "clusterjellyfin.fullname" . }}-ssh-keys
       - name: ssh-home
+        emptyDir: {}
+      - name: ssh-host-keys
         emptyDir: {}
       - name: dev-dri
         hostPath:
