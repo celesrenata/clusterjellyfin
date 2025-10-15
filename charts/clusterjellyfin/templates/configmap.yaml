@@ -25,7 +25,7 @@ data:
     
     hosts:
       {{- range $i := until (int .Values.workers.replicas) }}
-      - host: jellyfin@{{ include "clusterjellyfin.fullname" $ }}-workers-{{ $i }}.{{ include "clusterjellyfin.fullname" $ }}-workers-headless.{{ $.Release.Namespace }}.svc.cluster.local
+      - host: {{ .Values.rffmpeg.config.ssh.user }}@{{ include "clusterjellyfin.fullname" $ }}-workers-{{ $i }}.{{ include "clusterjellyfin.fullname" $ }}-workers-headless.{{ $.Release.Namespace }}.svc.cluster.local
         weight: 1
       {{- end }}
 ---

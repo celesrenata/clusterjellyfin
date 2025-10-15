@@ -68,7 +68,7 @@ spec:
           cp /ssh-keys/* /home/jellyfin/.ssh/
           chmod 700 /home/jellyfin/.ssh
           chmod 600 /home/jellyfin/.ssh/*
-          chown -R jellyfin:jellyfin /home/jellyfin/.ssh
+          chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.runAsGroup }} /home/jellyfin/.ssh
         volumeMounts:
         - name: ssh-keys
           mountPath: /ssh-keys
