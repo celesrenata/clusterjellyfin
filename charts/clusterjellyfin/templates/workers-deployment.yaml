@@ -43,9 +43,9 @@ spec:
           # Generate SSH host keys
           ssh-keygen -A
           
-          # Fix permissions on host keys
+          # Fix permissions and ownership on host keys for jellyfin user
           chmod 600 /etc/ssh/ssh_host_*
-          chown root:root /etc/ssh/ssh_host_*
+          chown {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.runAsGroup }} /etc/ssh/ssh_host_*
           
           # Create basic sshd_config
           cat > /etc/ssh/sshd_config << 'EOF'
@@ -57,6 +57,7 @@ spec:
           HostKey /etc/ssh/ssh_host_ecdsa_key
           HostKey /etc/ssh/ssh_host_ed25519_key
           EOF
+          chown {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.runAsGroup }} /etc/ssh/sshd_config
           
           # Debug: List what we created
           echo "Generated SSH files:"
