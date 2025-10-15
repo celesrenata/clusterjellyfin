@@ -38,21 +38,7 @@ spec:
           cat > /shared/rffmpeg << 'SCRIPT_END'
           #!/bin/bash
           echo "DEBUG: rffmpeg called with args: $@" >&2
-          echo "DEBUG: First arg is: '${1:-}'" >&2
-          case "${1:-}" in
-              ""|"-version"|"-f"|"-formats"|"-codecs"|"-decoders"|"-encoders"|"-bsfs"|"-protocols"|"-filters"|"-pix_fmts"|"-layouts"|"-sample_fmts")
-                  echo "DEBUG: Redirecting to jellyfin-ffmpeg" >&2
-                  exec /usr/lib/jellyfin-ffmpeg/ffmpeg "$@"
-                  ;;
-              *)
-                  echo "DEBUG: Using rffmpeg for transcoding" >&2
-                  # Embedded rffmpeg script starts here
-          SCRIPT_END
-          # Append the actual rffmpeg script content (skip the shebang line)
-          tail -n +2 /tmp/rffmpeg-real >> /shared/rffmpeg
-          cat >> /shared/rffmpeg << 'SCRIPT_END'
-                  ;;
-          esac
+          exec /usr/lib/jellyfin-ffmpeg/ffmpeg "$@"
           SCRIPT_END
           chmod +x /shared/rffmpeg
           echo "Init container completed successfully"
