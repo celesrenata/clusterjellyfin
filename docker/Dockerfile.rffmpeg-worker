@@ -5,18 +5,23 @@ RUN apt-get update && apt-get install -y curl gpg && \
     curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/jellyfin.gpg && \
     echo "deb [arch=$(dpkg --print-architecture)] https://repo.jellyfin.org/ubuntu noble main" | tee /etc/apt/sources.list.d/jellyfin.list
 
-# Install dependencies
+# Install dependencies and Intel hardware acceleration packages
 RUN apt-get update && apt-get install -y \
     jellyfin-ffmpeg7 \
     openssh-server \
-    intel-media-va-driver \
+    intel-media-va-driver-non-free \
     i965-va-driver \
     vainfo \
+    intel-gpu-tools \
+    ocl-icd-libopencl1 \
+    intel-opencl-icd \
     libnuma1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Create jellyfin user (or use existing)
-RUN id jellyfin || useradd -m -u 1001 -s /bin/bash jellyfin
+# Create render group and jellyfin user with proper groups
+RUN groupadd -g 303 render || true && \
+    (id jellyfin || useradd -m -u 1001 -s /bin/bash jellyfin) && \
+    usermod -a -G render jellyfin
 
 # Configure SSH and generate host keys
 RUN mkdir /var/run/sshd && \
