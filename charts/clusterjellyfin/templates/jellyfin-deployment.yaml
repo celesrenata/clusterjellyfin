@@ -32,7 +32,7 @@ spec:
         args:
         - |
           set -e
-          apt update && apt install -y wget
+          apt update && apt install -y wget openssh-client
           # Download rffmpeg content and embed it in wrapper script
           wget -O /tmp/rffmpeg-real https://raw.githubusercontent.com/joshuaboniface/rffmpeg/master/rffmpeg
           cat > /shared/rffmpeg << 'SCRIPT_END'
@@ -98,6 +98,9 @@ spec:
         - name: shared-rffmpeg
           mountPath: /usr/local/bin/rffmpeg
           subPath: rffmpeg
+        - name: main-ssh-keys
+          mountPath: /home/jellyfin/.ssh
+          readOnly: true
         resources:
           {{- toYaml .Values.jellyfin.resources | nindent 10 }}
       volumes:
@@ -112,6 +115,10 @@ spec:
           claimName: {{ include "clusterjellyfin.fullname" . }}-media
       - name: shared-rffmpeg
         emptyDir: {}
+      - name: main-ssh-keys
+        secret:
+          secretName: {{ include "clusterjellyfin.fullname" . }}-main-ssh
+          defaultMode: 0600
       - name: rffmpeg-config
         configMap:
           name: {{ include "clusterjellyfin.fullname" . }}-rffmpeg-config

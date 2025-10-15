@@ -66,12 +66,21 @@ spec:
           # Setup user SSH keys
           mkdir -p /home/jellyfin/.ssh
           cp /ssh-keys/* /home/jellyfin/.ssh/
+          
+          # Add main container's public key to authorized_keys
+          if [ -f /main-ssh/id_rsa.pub ]; then
+            cat /main-ssh/id_rsa.pub >> /home/jellyfin/.ssh/authorized_keys
+          fi
+          
           chmod 700 /home/jellyfin/.ssh
           chmod 600 /home/jellyfin/.ssh/*
           chown -R {{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.runAsGroup }} /home/jellyfin/.ssh
         volumeMounts:
         - name: ssh-keys
           mountPath: /ssh-keys
+        - name: main-ssh-keys
+          mountPath: /main-ssh
+          readOnly: true
         - name: ssh-host-keys
           mountPath: /etc/ssh
         - name: ssh-home
@@ -114,6 +123,9 @@ spec:
           secretName: {{ include "clusterjellyfin.fullname" . }}-ssh-keys
       - name: ssh-home
         emptyDir: {}
+      - name: main-ssh-keys
+        secret:
+          secretName: {{ include "clusterjellyfin.fullname" . }}-main-ssh
       - name: ssh-host-keys
         emptyDir: {}
       - name: dev-dri
