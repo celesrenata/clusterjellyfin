@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "clusterjellyfin.fullname" . }}-main
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "clusterjellyfin.labels" . | nindent 4 }}
     component: main
@@ -33,7 +33,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "clusterjellyfin.fullname" . }}-workers-headless
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "clusterjellyfin.labels" . | nindent 4 }}
     component: workers

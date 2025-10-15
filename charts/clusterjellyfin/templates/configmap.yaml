@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: {{ include "clusterjellyfin.fullname" . }}-rffmpeg-config
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "clusterjellyfin.labels" . | nindent 4 }}
 data:
@@ -25,7 +25,7 @@ data:
     
     hosts:
       {{- range $i := until (int .Values.workers.replicas) }}
-      - host: jellyfin@{{ include "clusterjellyfin.fullname" $ }}-workers-{{ $i }}.{{ include "clusterjellyfin.fullname" $ }}-workers-headless.{{ $.Values.namespace }}.svc.cluster.local
+      - host: jellyfin@{{ include "clusterjellyfin.fullname" $ }}-workers-{{ $i }}.{{ include "clusterjellyfin.fullname" $ }}-workers-headless.{{ $.Release.Namespace }}.svc.cluster.local
         weight: 1
       {{- end }}
 ---
@@ -33,7 +33,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: {{ include "clusterjellyfin.fullname" . }}-ssh-keys
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "clusterjellyfin.labels" . | nindent 4 }}
 type: Opaque
