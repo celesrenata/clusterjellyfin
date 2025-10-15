@@ -10,6 +10,8 @@ spec:
     - {{ .Values.jellyfin.storage.config.accessMode }}
   {{- if .Values.jellyfin.storage.config.storageClass }}
   storageClassName: {{ .Values.jellyfin.storage.config.storageClass }}
+  {{- else }}
+  storageClassName: ""
   {{- end }}
   resources:
     requests:
@@ -27,6 +29,8 @@ spec:
     - {{ .Values.jellyfin.storage.cache.accessMode }}
   {{- if .Values.jellyfin.storage.cache.storageClass }}
   storageClassName: {{ .Values.jellyfin.storage.cache.storageClass }}
+  {{- else }}
+  storageClassName: ""
   {{- end }}
   resources:
     requests:
@@ -44,6 +48,8 @@ spec:
     - {{ .Values.jellyfin.storage.media.accessMode }}
   {{- if .Values.jellyfin.storage.media.storageClass }}
   storageClassName: {{ .Values.jellyfin.storage.media.storageClass }}
+  {{- else }}
+  storageClassName: ""
   {{- end }}
   resources:
     requests:
