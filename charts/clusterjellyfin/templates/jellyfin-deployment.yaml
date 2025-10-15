@@ -57,11 +57,8 @@ spec:
           # Local ffmpeg for validation
           LOCAL_FFMPEG="/usr/lib/jellyfin-ffmpeg/ffmpeg"
           
-          # Generate worker list dynamically
-          WORKERS=()
-          {{- range $i := until (int .Values.workers.replicas) }}
-          WORKERS+=("{{ include "clusterjellyfin.fullname" $ }}-workers-{{ $i }}")
-          {{- end }}
+          # Use service name for load balancing across workers
+          WORKER_SERVICE="{{ include "clusterjellyfin.fullname" $ }}-workers"
           SSH_USER="jellyfin"
           
           # Check for validation flags
@@ -70,9 +67,8 @@ spec:
                   exec $LOCAL_FFMPEG "$@"
                   ;;
               *)
-                  # Distribute to random worker
-                  WORKER=${WORKERS[$RANDOM % ${#WORKERS[@]}]}
-                  ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa $SSH_USER@$WORKER "/usr/lib/jellyfin-ffmpeg/ffmpeg $*"
+                  # Connect to worker service (load balanced)
+                  ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa $SSH_USER@$WORKER_SERVICE "/usr/lib/jellyfin-ffmpeg/ffmpeg $*"
                   ;;
           esac
           SCRIPT_END
