@@ -43,6 +43,14 @@ spec:
           # Generate SSH host keys
           ssh-keygen -A
           
+          # Create basic sshd_config
+          cat > /etc/ssh/sshd_config << 'EOF'
+          Port 22
+          PasswordAuthentication no
+          PubkeyAuthentication yes
+          PermitRootLogin no
+          EOF
+          
           # Setup user SSH keys
           mkdir -p /home/jellyfin/.ssh
           cp /ssh-keys/* /home/jellyfin/.ssh/
