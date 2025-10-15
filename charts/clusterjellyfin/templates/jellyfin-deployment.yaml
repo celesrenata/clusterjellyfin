@@ -23,6 +23,18 @@ spec:
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
         fsGroup: {{ .Values.securityContext.fsGroup }}
       initContainers:
+      - name: create-jellyfin-user
+        image: debian:trixie-slim
+        command:
+        - /bin/bash
+        - -c
+        - |
+          # Create jellyfin user in shared passwd file
+          echo "jellyfin:x:1001:1001:Jellyfin User:/home/jellyfin:/bin/bash" > /shared-etc/passwd
+          echo "jellyfin:x:1001:" > /shared-etc/group
+        volumeMounts:
+        - name: shared-etc
+          mountPath: /shared-etc
       - name: install-rffmpeg
         image: python:3.11-slim
         securityContext:
@@ -33,6 +45,10 @@ spec:
         - |
           set -e
           apt update && apt install -y wget openssh-client
+          
+          # Create jellyfin user for SSH
+          useradd -u 1001 -g 1001 -m -s /bin/bash jellyfin || true
+          
           # Download rffmpeg content and embed it in wrapper script
           wget -O /tmp/rffmpeg-real https://raw.githubusercontent.com/joshuaboniface/rffmpeg/master/rffmpeg
           cat > /shared/rffmpeg << 'SCRIPT_END'
@@ -101,6 +117,12 @@ spec:
         - name: main-ssh-keys
           mountPath: /home/jellyfin/.ssh
           readOnly: true
+        - name: shared-etc
+          mountPath: /etc/passwd
+          subPath: passwd
+        - name: shared-etc
+          mountPath: /etc/group
+          subPath: group
         resources:
           {{- toYaml .Values.jellyfin.resources | nindent 10 }}
       volumes:
@@ -119,6 +141,8 @@ spec:
         secret:
           secretName: {{ include "clusterjellyfin.fullname" . }}-main-ssh
           defaultMode: 0600
+      - name: shared-etc
+        emptyDir: {}
       - name: rffmpeg-config
         configMap:
           name: {{ include "clusterjellyfin.fullname" . }}-rffmpeg-config
