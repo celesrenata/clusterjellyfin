@@ -109,6 +109,8 @@ spec:
           mountPath: /media
         - name: cache
           mountPath: /cache
+        - name: shared-tmp
+          mountPath: /tmp
         {{- if .Values.workers.gpu.enabled }}
         resources:
           requests:
@@ -138,6 +140,8 @@ spec:
       - name: media
         persistentVolumeClaim:
           claimName: {{ include "clusterjellyfin.fullname" . }}-media
+      - name: shared-tmp
+        emptyDir: {}
       - name: cache
         persistentVolumeClaim:
           claimName: {{ include "clusterjellyfin.fullname" . }}-cache

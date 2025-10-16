@@ -132,6 +132,8 @@ spec:
         - name: shared-etc
           mountPath: /etc/group
           subPath: group
+        - name: shared-tmp
+          mountPath: /tmp
         resources:
           {{- toYaml .Values.jellyfin.resources | nindent 10 }}
       volumes:
@@ -145,6 +147,8 @@ spec:
         persistentVolumeClaim:
           claimName: {{ include "clusterjellyfin.fullname" . }}-media
       - name: shared-rffmpeg
+        emptyDir: {}
+      - name: shared-tmp
         emptyDir: {}
       - name: main-ssh-keys
         secret:
