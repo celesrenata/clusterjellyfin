@@ -132,7 +132,7 @@ spec:
         - name: shared-etc
           mountPath: /etc/group
           subPath: group
-        - name: shared-tmp
+        - name: trickplay
           mountPath: /tmp/jellyfin
         resources:
           {{- toYaml .Values.jellyfin.resources | nindent 10 }}
@@ -148,8 +148,9 @@ spec:
           claimName: {{ include "clusterjellyfin.fullname" . }}-media
       - name: shared-rffmpeg
         emptyDir: {}
-      - name: shared-tmp
-        emptyDir: {}
+      - name: trickplay
+        persistentVolumeClaim:
+          claimName: {{ include "clusterjellyfin.fullname" . }}-trickplay
       - name: main-ssh-keys
         secret:
           secretName: {{ include "clusterjellyfin.fullname" . }}-main-ssh

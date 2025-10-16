@@ -109,7 +109,7 @@ spec:
           mountPath: /media
         - name: cache
           mountPath: /cache
-        - name: shared-tmp
+        - name: trickplay
           mountPath: /tmp/jellyfin
         {{- if .Values.workers.gpu.enabled }}
         resources:
@@ -140,8 +140,9 @@ spec:
       - name: media
         persistentVolumeClaim:
           claimName: {{ include "clusterjellyfin.fullname" . }}-media
-      - name: shared-tmp
-        emptyDir: {}
+      - name: trickplay
+        persistentVolumeClaim:
+          claimName: {{ include "clusterjellyfin.fullname" . }}-trickplay
       - name: cache
         persistentVolumeClaim:
           claimName: {{ include "clusterjellyfin.fullname" . }}-cache

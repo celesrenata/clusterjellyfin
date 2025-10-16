@@ -54,3 +54,22 @@ spec:
   resources:
     requests:
       storage: {{ .Values.jellyfin.storage.media.size }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "clusterjellyfin.fullname" . }}-trickplay
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "clusterjellyfin.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteMany
+  {{- if .Values.jellyfin.storage.cache.storageClass }}
+  storageClassName: {{ .Values.jellyfin.storage.cache.storageClass }}
+  {{- else }}
+  storageClassName: ""
+  {{- end }}
+  resources:
+    requests:
+      storage: 5Gi
