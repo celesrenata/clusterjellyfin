@@ -68,7 +68,7 @@ spec:
                   ;;
               *)
                   # Connect to worker service (load balanced) with proper argument escaping
-                  ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa $SSH_USER@$WORKER_SERVICE "/usr/lib/jellyfin-ffmpeg/ffmpeg $(printf '%q ' \"\$@\")"
+                  ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa $SSH_USER@$WORKER_SERVICE "/usr/lib/jellyfin-ffmpeg/ffmpeg $(printf '%q ' "$@")"
                   ;;
           esac
           SCRIPT_END
