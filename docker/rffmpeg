@@ -15,8 +15,10 @@ case "${1:-}" in
     *)
         # Check if this is a ffprobe operation (metadata probing)
         if [[ "$*" == *"-print_format"* ]] || [[ "$*" == *"-show_streams"* ]] || [[ "$*" == *"-show_chapters"* ]] || [[ "$*" == *"-show_format"* ]]; then
-            # This is ffprobe - use ffprobe on worker
-            ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa $SSH_USER@$WORKER_SERVICE "/usr/lib/jellyfin-ffmpeg/ffprobe $(printf '%q ' "$@")"
+            # Convert deprecated -print_format to -output_format and use ffprobe on worker
+            args=$(printf '%q ' "$@")
+            args="${args//-print_format/-output_format}"
+            ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa $SSH_USER@$WORKER_SERVICE "/usr/lib/jellyfin-ffmpeg/ffprobe $args"
         else
             # This is ffmpeg transcoding - use ffmpeg on worker
             ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa $SSH_USER@$WORKER_SERVICE "/usr/lib/jellyfin-ffmpeg/ffmpeg $(printf '%q ' "$@")"
