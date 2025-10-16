@@ -77,7 +77,7 @@ rffmpeg:
     fallback:
       allow: true
     ssh:
-      user: "jellyfin"  # SSH username for worker connections
+      user: "ubuntu"  # SSH username for worker connections
       options: "-i /config/.ssh/id_rsa -o StrictHostKeyChecking=no"
 
 service:
