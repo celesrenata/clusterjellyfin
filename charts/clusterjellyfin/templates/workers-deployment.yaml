@@ -105,6 +105,8 @@ spec:
           mountPath: /etc/ssh
         - name: dev-dri
           mountPath: /dev/dri
+        - name: media
+          mountPath: /media
         {{- if .Values.workers.gpu.enabled }}
         resources:
           requests:
@@ -131,3 +133,6 @@ spec:
       - name: dev-dri
         hostPath:
           path: /dev/dri
+      - name: media
+        persistentVolumeClaim:
+          claimName: {{ include "clusterjellyfin.fullname" . }}-media
