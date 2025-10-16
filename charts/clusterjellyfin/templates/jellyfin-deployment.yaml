@@ -67,8 +67,13 @@ spec:
                   exec $LOCAL_FFMPEG "$@"
                   ;;
               *)
-                  # Connect to worker service (load balanced) with proper argument escaping
-                  ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa $SSH_USER@$WORKER_SERVICE "/usr/lib/jellyfin-ffmpeg/ffmpeg $(printf '%q ' "$@")"
+                  # Connect to worker service (load balanced) with VAAPI device initialization
+                  args=$(printf '%q ' "$@")
+                  # Add VAAPI device initialization if missing and using VAAPI
+                  if [[ "$args" == *"vaapi"* ]] && [[ "$args" != *"-init_hw_device"* ]]; then
+                    args="-init_hw_device vaapi=va:/dev/dri/renderD128 $args"
+                  fi
+                  ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa $SSH_USER@$WORKER_SERVICE "/usr/lib/jellyfin-ffmpeg/ffmpeg $args"
                   ;;
           esac
           SCRIPT_END
