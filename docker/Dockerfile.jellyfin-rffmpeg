@@ -25,8 +25,8 @@ RUN apt-get update && apt-get install -y \
 ENV LIBVA_DRIVER_NAME=iHD
 ENV LIBVA_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
 
-# Install rffmpeg
-COPY --from=build /rffmpeg/rffmpeg /usr/local/bin/rffmpeg
+# Install our custom rffmpeg script
+COPY docker/rffmpeg /usr/local/bin/rffmpeg
 RUN chmod +x /usr/local/bin/rffmpeg
 
 # Create symlinks
