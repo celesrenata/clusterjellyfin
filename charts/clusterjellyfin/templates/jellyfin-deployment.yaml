@@ -30,8 +30,8 @@ spec:
         - -c
         - |
           # Create jellyfin user in shared passwd file
-          echo "jellyfin:x:1001:1001:Jellyfin User:/home/jellyfin:/bin/bash" > /shared-etc/passwd
-          echo "jellyfin:x:1001:" > /shared-etc/group
+          echo "jellyfin:x:{{ .Values.securityContext.runAsUser }}:{{ .Values.securityContext.runAsGroup }}:Jellyfin User:/home/jellyfin:/bin/bash" > /shared-etc/passwd
+          echo "jellyfin:x:{{ .Values.securityContext.runAsGroup }}:" > /shared-etc/group
         volumeMounts:
         - name: shared-etc
           mountPath: /shared-etc
@@ -47,7 +47,7 @@ spec:
           apt update && apt install -y wget openssh-client
           
           # Create jellyfin user for SSH
-          useradd -u 1001 -g 1001 -m -s /bin/bash jellyfin || true
+          useradd -u {{ .Values.securityContext.runAsUser }} -g {{ .Values.securityContext.runAsGroup }} -m -s /bin/bash jellyfin || true
           
           # Download rffmpeg content and embed it in wrapper script
           wget -O /tmp/rffmpeg-real https://raw.githubusercontent.com/joshuaboniface/rffmpeg/master/rffmpeg

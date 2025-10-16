@@ -21,28 +21,28 @@ jellyfin:
       memory: 4Gi
   
   # Jellyfin configuration
-  publishedServerUrl: ""  # Set to your public URL if needed
+  publishedServerUrl: "https://jellyfin.celestium.life"
   
   # Storage configuration
   storage:
     config:
       size: 10Gi
-      storageClass: ""  # Use default storage class or configure NFS below
+      storageClass: ""
       accessMode: ReadWriteOnce
       nfs:
-        server: ""  # Configure your NFS server IP
-        path: ""    # Configure your NFS path
+        server: "192.168.42.8"
+        path: "/volume1/Kubernetes/jellyfin/config"
     cache:
       size: 50Gi
-      storageClass: "longhorn"  # Fast storage recommended for cache
+      storageClass: "longhorn"
       accessMode: ReadWriteMany
     media:
       size: 1Ti
-      storageClass: ""  # Use default storage class or configure NFS below
+      storageClass: ""
       accessMode: ReadWriteMany
       nfs:
-        server: ""  # Configure your NFS server IP
-        path: ""    # Configure your NFS media path
+        server: "192.168.42.8"
+        path: "/volume1/Plex"
 
 workers:
   # Worker nodes for distributed transcoding
@@ -55,29 +55,28 @@ workers:
       cpu: 4000m
       memory: 8Gi
   
-  # Node selection for workers (optional)
+  # Node selection for workers (nodes with Intel Arc GPUs)
   nodeSelector:
-    enabled: false  # Set to true to use specific nodes
-    nodes: []       # List your worker node names
+    enabled: true
+    nodes:
+      - gremlin-2
+      - gremlin-3
   
-  # GPU configuration
+  # Intel GPU resource requests
   gpu:
-    enabled: false  # Set to true for hardware acceleration
-    resource: "gpu.intel.com/i915"  # or "nvidia.com/gpu"
+    enabled: true
+    resource: "gpu.intel.com/i915"
     limit: 1
-  
-  # Enable privileged mode for GPU access
-  privileged: true
 
 rffmpeg:
   # rffmpeg configuration
   config:
     logging:
-      debug: false
+      debug: true
     fallback:
       allow: true
     ssh:
-      user: "jellyfin"  # SSH username for worker connections
+      user: "ubuntu"
       options: "-i /config/.ssh/id_rsa -o StrictHostKeyChecking=no"
 
 service:
@@ -86,16 +85,23 @@ service:
   httpsPort: 8920
 
 ingress:
-  enabled: false  # Set to true for external access
+  enabled: true
   className: ""
-  annotations: {}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+    traefik.ingress.kubernetes.io/router.middlewares: default-redirectscheme@kubernetescrd
   hosts:
-    - host: jellyfin.example.com  # Configure your domain
+    - host: jellyfin.celestium.life
       paths:
         - path: /
           pathType: Prefix
-  tls: []
-  httpsAnnotations: {}
+  tls:
+    - hosts:
+        - jellyfin.celestium.life
+      secretName: jellyfin-cert
+  httpsAnnotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    cert-manager.io/cluster-issuer: celestium-le-production
 
 # Security context
 securityContext:
@@ -104,4 +110,4 @@ securityContext:
   fsGroup: 1001
 
 # Namespace
-namespace: jellyfin-system
+namespace: jellyfin
