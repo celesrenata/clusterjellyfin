@@ -201,7 +201,7 @@ kubectl get pods -n jellyfin-system
 ```bash
 kubectl exec -n jellyfin-system deployment/jellyfin-clusterjellyfin-main -- \
   ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa \
-  ubuntu@jellyfin-clusterjellyfin-workers "echo 'SSH works'"
+  jellyfin@jellyfin-clusterjellyfin-workers "echo 'SSH works'"
 ```
 
 ### Check Storage Mounts
@@ -231,6 +231,7 @@ kubectl logs -n jellyfin-system deployment/jellyfin-clusterjellyfin-main | grep 
 **SSH connection refused:**
 - Check worker pods are running: `kubectl get pods -n jellyfin-system`
 - Verify SSH keys are generated: `kubectl get secret -n jellyfin-system`
+- SSH uses hardcoded 'jellyfin' user - no configuration needed
 
 **GPU not detected:**
 - Ensure `privileged: true` is set for workers
