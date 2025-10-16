@@ -133,7 +133,7 @@ spec:
           mountPath: /etc/group
           subPath: group
         - name: shared-tmp
-          mountPath: /tmp
+          mountPath: /tmp/jellyfin
         resources:
           {{- toYaml .Values.jellyfin.resources | nindent 10 }}
       volumes:

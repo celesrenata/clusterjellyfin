@@ -110,7 +110,7 @@ spec:
         - name: cache
           mountPath: /cache
         - name: shared-tmp
-          mountPath: /tmp
+          mountPath: /tmp/jellyfin
         {{- if .Values.workers.gpu.enabled }}
         resources:
           requests:
