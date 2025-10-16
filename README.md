@@ -1,14 +1,15 @@
 # ClusterJellyfin
 
-Distributed Jellyfin deployment with remote transcoding workers using rffmpeg.
+Distributed Jellyfin deployment with remote transcoding workers using rffmpeg. Validated with Intel Arc Graphics hardware acceleration.
 
 ## Features
 
 - **Distributed Transcoding**: Main Jellyfin instance delegates transcoding to worker pods via SSH
-- **Hardware Acceleration**: Workers support Intel QSV, NVIDIA CUDA, AMD VAAPI
+- **Hardware Acceleration**: Workers support Intel Arc Graphics, NVIDIA CUDA, AMD VAAPI
 - **Auto-scaling**: StatefulSet workers with configurable replica count
 - **Load Balancing**: Automatic distribution of transcoding jobs across available workers
 - **Persistent Storage**: NFS and Longhorn support for media, config, and cache
+- **Generic Configuration**: No hardcoded values - fully customizable for any environment
 
 ## Architecture
 
@@ -27,7 +28,7 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg.
 
 - Kubernetes cluster
 - Helm 3.x
-- NFS server (optional, for shared storage)
+- Storage solution (NFS server or dynamic provisioning)
 
 ### Installation
 
@@ -37,17 +38,25 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg.
    helm repo update
    ```
 
-2. **Install ClusterJellyfin:**
+2. **Create your values file:**
+   ```bash
+   # Download example configuration
+   curl -O https://raw.githubusercontent.com/celesrenata/clusterjellyfin/main/example-values.yaml
+   
+   # Edit with your settings
+   cp example-values.yaml values.yaml
+   # Configure storage, domains, GPU settings, etc.
+   ```
+
+3. **Install ClusterJellyfin:**
    ```bash
    helm install jellyfin clusterjellyfin/clusterjellyfin \
      --namespace jellyfin-system \
      --create-namespace \
-     --set workers.gpu.enabled=false \
-     --set workers.privileged=true \
-     --set service.type=ClusterIP
+     -f values.yaml
    ```
 
-3. **Access Jellyfin:**
+4. **Access Jellyfin:**
    ```bash
    kubectl port-forward -n jellyfin-system svc/jellyfin-clusterjellyfin-main 8096:8096
    ```
@@ -60,7 +69,7 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg.
 | Parameter | Description | Default |
 |-----------|-------------|---------|
 | `workers.replicas` | Number of transcoding workers | `3` |
-| `workers.privileged` | Enable privileged mode for GPU access | `false` |
+| `workers.privileged` | Enable privileged mode for GPU access | `true` |
 | `workers.gpu.enabled` | Enable GPU support | `false` |
 | `service.type` | Service type (ClusterIP/LoadBalancer/NodePort) | `ClusterIP` |
 
@@ -68,77 +77,92 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg.
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
-| `storage.config.storageClass` | Storage class for config | `""` (NFS) |
-| `storage.config.size` | Config storage size | `10Gi` |
-| `storage.media.storageClass` | Storage class for media | `""` (NFS) |
-| `storage.media.size` | Media storage size | `1Ti` |
-| `storage.cache.storageClass` | Storage class for cache | `longhorn` |
-| `storage.cache.size` | Cache storage size | `50Gi` |
+| `jellyfin.storage.config.storageClass` | Storage class for config | `""` |
+| `jellyfin.storage.config.size` | Config storage size | `10Gi` |
+| `jellyfin.storage.media.storageClass` | Storage class for media | `""` |
+| `jellyfin.storage.media.size` | Media storage size | `1Ti` |
+| `jellyfin.storage.cache.storageClass` | Storage class for cache | `longhorn` |
+| `jellyfin.storage.cache.size` | Cache storage size | `50Gi` |
 
-### GPU Support
+### Hardware Acceleration
 
-For NVIDIA GPU support:
-```bash
-helm install jellyfin clusterjellyfin/clusterjellyfin \
-  --set workers.gpu.enabled=true \
-  --set workers.privileged=true \
-  --set workers.resources.limits."nvidia\.com/gpu"=1
-```
-
-For Intel GPU support:
-```bash
-helm install jellyfin clusterjellyfin/clusterjellyfin \
-  --set workers.privileged=true \
-  --set workers.resources.limits."gpu\.intel\.com/i915"=1
-```
-
-## Advanced Configuration
-
-### Custom Values File
-
-Create `values.yaml`:
+**Intel Arc Graphics:**
 ```yaml
 workers:
-  replicas: 5
   privileged: true
   gpu:
     enabled: true
-  resources:
-    limits:
-      nvidia.com/gpu: 1
-    requests:
-      cpu: 1000m
-      memory: 2Gi
+    resource: "gpu.intel.com/i915"
+    limit: 1
+```
 
-storage:
-  config:
-    storageClass: "longhorn"
-  media:
-    storageClass: "nfs-client"
-    size: "5Ti"
+**NVIDIA GPU:**
+```yaml
+workers:
+  privileged: true
+  gpu:
+    enabled: true
+    resource: "nvidia.com/gpu"
+    limit: 1
+```
+
+## Example Configurations
+
+### Minimal Setup (No GPU)
+```yaml
+workers:
+  replicas: 2
+  privileged: true
+  gpu:
+    enabled: false
+
+jellyfin:
+  storage:
+    config:
+      storageClass: "longhorn"
+    media:
+      storageClass: "nfs-client"
 
 service:
   type: LoadBalancer
-  annotations:
-    metallb.universe.tf/address-pool: default
 ```
 
-Install with custom values:
-```bash
-helm install jellyfin clusterjellyfin/clusterjellyfin \
-  --namespace jellyfin-system \
-  --create-namespace \
-  -f values.yaml
-```
-
-### NFS Storage Setup
-
-For NFS storage, ensure your cluster has NFS support and update the PV configuration:
+### Intel Arc Graphics Setup
 ```yaml
-nfs:
-  server: "192.168.1.100"
-  configPath: "/mnt/jellyfin/config"
-  mediaPath: "/mnt/jellyfin/media"
+workers:
+  replicas: 3
+  privileged: true
+  nodeSelector:
+    enabled: true
+    nodes:
+      - gpu-node-1
+      - gpu-node-2
+  gpu:
+    enabled: true
+    resource: "gpu.intel.com/i915"
+    limit: 1
+
+jellyfin:
+  publishedServerUrl: "https://jellyfin.yourdomain.com"
+  storage:
+    config:
+      storageClass: "longhorn"
+    cache:
+      storageClass: "longhorn"  # Fast storage for transcoding
+    media:
+      storageClass: ""
+      nfs:
+        server: "192.168.1.100"
+        path: "/mnt/media"
+
+ingress:
+  enabled: true
+  className: "nginx"
+  hosts:
+    - host: jellyfin.yourdomain.com
+      paths:
+        - path: /
+          pathType: Prefix
 ```
 
 ## Distributed Transcoding
@@ -149,16 +173,19 @@ ClusterJellyfin uses rffmpeg to distribute transcoding jobs:
 2. **Transcoding jobs** are distributed to worker pods via SSH
 3. **Load balancing** automatically spreads jobs across available workers
 4. **Hardware acceleration** is available on worker pods
+5. **Shared cache** allows workers to write HLS segments accessible by main pod
 
 ### Monitoring Transcoding
 
-Check worker pod logs:
+**Check transcoding activity:**
 ```bash
-kubectl logs -n jellyfin-system jellyfin-clusterjellyfin-workers-0
-```
+# View cache directory for active transcoding
+kubectl exec -n jellyfin-system deployment/jellyfin-clusterjellyfin-main -- ls -la /cache/transcodes/
 
-Test distributed transcoding:
-```bash
+# Monitor worker logs
+kubectl logs -n jellyfin-system jellyfin-clusterjellyfin-workers-0 -f
+
+# Test distributed transcoding
 kubectl exec -n jellyfin-system deployment/jellyfin-clusterjellyfin-main -- \
   /usr/local/bin/rffmpeg -f lavfi -i testsrc=duration=1:size=320x240:rate=1 -c:v libx264 -f null -
 ```
@@ -170,16 +197,17 @@ kubectl exec -n jellyfin-system deployment/jellyfin-clusterjellyfin-main -- \
 kubectl get pods -n jellyfin-system
 ```
 
-### Check SSH Connectivity
+### Verify SSH Connectivity
 ```bash
 kubectl exec -n jellyfin-system deployment/jellyfin-clusterjellyfin-main -- \
   ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa \
-  jellyfin@jellyfin-clusterjellyfin-workers "echo 'SSH works'"
+  ubuntu@jellyfin-clusterjellyfin-workers "echo 'SSH works'"
 ```
 
-### Check Storage
+### Check Storage Mounts
 ```bash
 kubectl get pv,pvc -n jellyfin-system
+kubectl exec -n jellyfin-system deployment/jellyfin-clusterjellyfin-main -- df -h
 ```
 
 ### View Logs
@@ -189,13 +217,33 @@ kubectl logs -n jellyfin-system deployment/jellyfin-clusterjellyfin-main
 
 # Worker pod logs
 kubectl logs -n jellyfin-system jellyfin-clusterjellyfin-workers-0
+
+# Filter transcoding errors
+kubectl logs -n jellyfin-system deployment/jellyfin-clusterjellyfin-main | grep -E "FFmpeg|transcode"
 ```
+
+### Common Issues
+
+**Transcoding fails with "No such file or directory":**
+- Check that workers have access to cache volume: `/cache/transcodes/`
+- Verify media volume is mounted on workers: `/media/`
+
+**SSH connection refused:**
+- Check worker pods are running: `kubectl get pods -n jellyfin-system`
+- Verify SSH keys are generated: `kubectl get secret -n jellyfin-system`
+
+**GPU not detected:**
+- Ensure `privileged: true` is set for workers
+- Check GPU resources are available: `kubectl describe node <gpu-node>`
+- Verify GPU drivers are installed on nodes
 
 ## Upgrading
 
 ```bash
 helm repo update
-helm upgrade jellyfin clusterjellyfin/clusterjellyfin --namespace jellyfin-system
+helm upgrade jellyfin clusterjellyfin/clusterjellyfin \
+  --namespace jellyfin-system \
+  -f values.yaml
 ```
 
 ## Uninstalling
@@ -213,7 +261,10 @@ kubectl delete namespace jellyfin-system
 git clone https://github.com/celesrenata/clusterjellyfin
 cd clusterjellyfin
 helm package charts/clusterjellyfin
-helm install jellyfin ./clusterjellyfin-*.tgz --namespace jellyfin-system --create-namespace
+helm install jellyfin ./clusterjellyfin-*.tgz \
+  --namespace jellyfin-system \
+  --create-namespace \
+  -f values.yaml
 ```
 
 ### Contributing
@@ -223,6 +274,14 @@ helm install jellyfin ./clusterjellyfin-*.tgz --namespace jellyfin-system --crea
 3. Make your changes
 4. Test with `helm lint` and `helm template`
 5. Submit a pull request
+
+## Validation Status
+
+- **Distributed Transcoding**: Tested with multiple concurrent streams
+- **Intel Arc Graphics**: Hardware acceleration confirmed working
+- **Load Balancing**: Multiple workers processing jobs simultaneously
+- **Cache Sharing**: Workers successfully writing to shared cache volume
+- **SSH Connectivity**: Automatic key generation and distribution working  
 
 ## License
 
