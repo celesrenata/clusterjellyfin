@@ -13,7 +13,13 @@ case "${1:-}" in
         exec $LOCAL_FFMPEG "$@"
         ;;
     *)
-        # Connect to worker service (load balanced) with proper argument escaping
-        ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa $SSH_USER@$WORKER_SERVICE "/usr/lib/jellyfin-ffmpeg/ffmpeg $(printf '%q ' "$@")"
+        # Check if this is a ffprobe operation (metadata probing)
+        if [[ "$*" == *"-print_format"* ]] || [[ "$*" == *"-show_streams"* ]] || [[ "$*" == *"-show_chapters"* ]] || [[ "$*" == *"-show_format"* ]]; then
+            # This is ffprobe - use ffprobe on worker
+            ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa $SSH_USER@$WORKER_SERVICE "/usr/lib/jellyfin-ffmpeg/ffprobe $(printf '%q ' "$@")"
+        else
+            # This is ffmpeg transcoding - use ffmpeg on worker
+            ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa $SSH_USER@$WORKER_SERVICE "/usr/lib/jellyfin-ffmpeg/ffmpeg $(printf '%q ' "$@")"
+        fi
         ;;
 esac
