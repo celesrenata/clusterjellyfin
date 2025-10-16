@@ -1,10 +1,11 @@
 FROM ubuntu:24.04
 
 # Add Intel graphics repository and install dependencies
-RUN apt-get update && apt-get install -y software-properties-common curl gpg && \
+RUN apt-get update && apt-get install -y software-properties-common curl gpg wget && \
     curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/jellyfin.gpg && \
     echo "deb [arch=$(dpkg --print-architecture)] https://repo.jellyfin.org/ubuntu noble main" | tee /etc/apt/sources.list.d/jellyfin.list && \
-    add-apt-repository -y ppa:kobuk-team/intel-graphics
+    wget -qO - https://repositories.intel.com/gpu/intel-graphics.key | gpg --yes --dearmor --output /usr/share/keyrings/intel-graphics.gpg && \
+    echo "deb [arch=amd64,i386 signed-by=/usr/share/keyrings/intel-graphics.gpg] https://repositories.intel.com/gpu/ubuntu noble unified" | tee /etc/apt/sources.list.d/intel-gpu-noble.list
 
 # Install dependencies and Intel Arc XE drivers
 RUN apt-get update && apt-get install -y \
@@ -12,7 +13,6 @@ RUN apt-get update && apt-get install -y \
     openssh-server \
     libze-intel-gpu1 \
     libze1 \
-    intel-metrics-discovery \
     intel-opencl-icd \
     clinfo \
     intel-gsc \
