@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Local ffmpeg for validation
+LOCAL_FFMPEG="/usr/lib/jellyfin-ffmpeg/ffmpeg"
+
+# Use service name for load balancing across workers
+WORKER_SERVICE="jellyfin-clusterjellyfin-workers"
+SSH_USER="jellyfin"
+
+# Check for validation flags
+case "${1:-}" in
+    ""|"-version"|"-f"|"-formats"|"-codecs"|"-decoders"|"-encoders"|"-bsfs"|"-protocols"|"-filters"|"-pix_fmts"|"-layouts"|"-sample_fmts"|"-buildconf")
+        exec $LOCAL_FFMPEG "$@"
+        ;;
+    *)
+        # Connect to worker service (load balanced) with proper argument escaping
+        ssh -o StrictHostKeyChecking=no -i /home/jellyfin/.ssh/id_rsa $SSH_USER@$WORKER_SERVICE "/usr/lib/jellyfin-ffmpeg/ffmpeg $(printf '%q ' "$@")"
+        ;;
+esac
