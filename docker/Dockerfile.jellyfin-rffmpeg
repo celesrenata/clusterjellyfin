@@ -26,7 +26,7 @@ ENV LIBVA_DRIVER_NAME=iHD
 ENV LIBVA_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
 
 # Install our custom rffmpeg script
-COPY docker/rffmpeg /usr/local/bin/rffmpeg
+COPY rffmpeg /usr/local/bin/rffmpeg
 RUN chmod +x /usr/local/bin/rffmpeg
 
 # Create symlinks
