@@ -107,6 +107,8 @@ spec:
           mountPath: /dev/dri
         - name: media
           mountPath: /media
+        - name: cache
+          mountPath: /cache
         {{- if .Values.workers.gpu.enabled }}
         resources:
           requests:
@@ -136,3 +138,6 @@ spec:
       - name: media
         persistentVolumeClaim:
           claimName: {{ include "clusterjellyfin.fullname" . }}-media
+      - name: cache
+        persistentVolumeClaim:
+          claimName: {{ include "clusterjellyfin.fullname" . }}-cache
