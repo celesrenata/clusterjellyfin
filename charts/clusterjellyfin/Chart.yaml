@@ -3,7 +3,7 @@ name: clusterjellyfin
 description: Kubernetes-deployed Jellyfin with distributed transcoding using rffmpeg and Intel Arc QSV acceleration
 type: application
 version: 0.1.45
-appVersion: "10.9.11"
+appVersion: "10.11.0-rc9"
 keywords:
   - jellyfin
   - media

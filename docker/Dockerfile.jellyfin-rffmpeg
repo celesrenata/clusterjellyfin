@@ -3,7 +3,7 @@ FROM python:3.11-slim as build
 RUN apt-get update && apt-get install -y git
 RUN git clone https://github.com/joshuaboniface/rffmpeg.git /rffmpeg
 
-FROM jellyfin/jellyfin:latest
+FROM jellyfin/jellyfin:10.11.0-rc9
 
 # Install dependencies and Intel Arc GPU drivers
 RUN apt-get update && apt-get install -y \
