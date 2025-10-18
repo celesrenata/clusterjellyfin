@@ -1,0 +1,14 @@
+{{- if and .Values.jellyfin.database.enabled (eq .Values.jellyfin.database.type "mariadb") }}
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Database
+metadata:
+  name: {{ .Values.jellyfin.database.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  mariaDbRef:
+    name: {{ .Values.jellyfin.database.mariaDbRef }}
+  characterSet: utf8mb4
+  collate: utf8mb4_unicode_ci
+  requeueInterval: 30s
+  retryInterval: 5s
+{{- end }}

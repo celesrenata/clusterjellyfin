@@ -1,0 +1,16 @@
+{{- if and .Values.jellyfin.database.enabled (eq .Values.jellyfin.database.type "mariadb") }}
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: User
+metadata:
+  name: {{ .Values.jellyfin.database.username }}
+  namespace: {{ .Values.namespace }}
+spec:
+  mariaDbRef:
+    name: {{ .Values.jellyfin.database.mariaDbRef }}
+  passwordSecretKeyRef:
+    name: {{ .Values.jellyfin.database.secretName }}
+    key: {{ .Values.jellyfin.database.passwordKey }}
+  maxUserConnections: 20
+  host: "%"
+  retryInterval: 5s
+{{- end }}

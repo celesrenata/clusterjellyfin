@@ -101,6 +101,41 @@ spec:
           value: "{{ .Values.jellyfin.publishedServerUrl }}"
         - name: JELLYFIN_FFMPEG
           value: "/usr/local/bin/rffmpeg"
+        {{- if .Values.jellyfin.database.enabled }}
+        {{- if eq .Values.jellyfin.database.type "mariadb" }}
+        - name: JELLYFIN_DB_TYPE
+          value: "mysql"
+        - name: JELLYFIN_DB_HOST
+          value: "{{ .Values.jellyfin.database.mariaDbRef }}"
+        - name: JELLYFIN_DB_PORT
+          value: "3306"
+        - name: JELLYFIN_DB_NAME
+          value: "{{ .Values.jellyfin.database.name }}"
+        - name: JELLYFIN_DB_USER
+          value: "{{ .Values.jellyfin.database.username }}"
+        - name: JELLYFIN_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.jellyfin.database.secretName }}
+              key: {{ .Values.jellyfin.database.passwordKey }}
+        {{- else if eq .Values.jellyfin.database.type "postgres" }}
+        - name: JELLYFIN_DB_TYPE
+          value: "postgres"
+        - name: JELLYFIN_DB_HOST
+          value: "{{ .Values.jellyfin.database.postgres.host }}"
+        - name: JELLYFIN_DB_PORT
+          value: "{{ .Values.jellyfin.database.postgres.port }}"
+        - name: JELLYFIN_DB_NAME
+          value: "{{ .Values.jellyfin.database.name }}"
+        - name: JELLYFIN_DB_USER
+          value: "{{ .Values.jellyfin.database.username }}"
+        - name: JELLYFIN_DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.jellyfin.database.postgresSecret }}
+              key: {{ .Values.jellyfin.database.postgresPasswordKey }}
+        {{- end }}
+        {{- end }}
         ports:
         - containerPort: 8096
         - containerPort: 8920

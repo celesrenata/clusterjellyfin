@@ -1,0 +1,24 @@
+{{- if and .Values.jellyfin.database.enabled (eq .Values.jellyfin.database.type "mariadb") }}
+apiVersion: k8s.mariadb.com/v1alpha1
+kind: Grant
+metadata:
+  name: {{ .Values.jellyfin.database.username }}-grant
+  namespace: {{ .Values.namespace }}
+spec:
+  mariaDbRef:
+    name: {{ .Values.jellyfin.database.mariaDbRef }}
+  privileges:
+    - "SELECT"
+    - "INSERT" 
+    - "UPDATE"
+    - "DELETE"
+    - "CREATE"
+    - "DROP"
+    - "INDEX"
+    - "ALTER"
+  database: {{ .Values.jellyfin.database.name }}
+  table: "*"
+  username: {{ .Values.jellyfin.database.username }}
+  host: "%"
+  retryInterval: 5s
+{{- end }}

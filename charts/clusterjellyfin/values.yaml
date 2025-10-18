@@ -23,6 +23,23 @@ jellyfin:
   # Jellyfin configuration
   publishedServerUrl: ""  # Set to your public URL if needed
   
+  # Database configuration
+  database:
+    enabled: false  # Set to true to use external database
+    type: "mariadb"  # Options: mariadb, postgres
+    # MariaDB configuration (using MariaDB operator)
+    mariaDbRef: "mariadb"  # Reference to existing MariaDB instance
+    # PostgreSQL configuration
+    postgres:
+      host: "postgres-cluster-rw"  # PostgreSQL service name
+      port: 5432
+    name: "jellyfin"
+    username: "jellyfin"
+    secretName: "mariadb-secret"  # For MariaDB
+    passwordKey: "MARIA_JELLYFIN_PASSWORD"  # For MariaDB
+    postgresSecret: "jellyfin-postgres-secret"  # For PostgreSQL
+    postgresPasswordKey: "password"  # For PostgreSQL
+  
   # Storage configuration
   storage:
     config:
