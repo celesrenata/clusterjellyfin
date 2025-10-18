@@ -101,6 +101,9 @@ spec:
           value: "{{ .Values.jellyfin.publishedServerUrl }}"
         - name: JELLYFIN_FFMPEG
           value: "/usr/local/bin/rffmpeg"
+        {{- if .Values.jellyfin.extraEnv }}
+        {{- toYaml .Values.jellyfin.extraEnv | nindent 8 }}
+        {{- end }}
         ports:
         - containerPort: 8096
         - containerPort: 8920

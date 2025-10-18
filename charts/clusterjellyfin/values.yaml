@@ -23,6 +23,13 @@ jellyfin:
   # Jellyfin configuration
   publishedServerUrl: ""  # Set to your public URL if needed
   
+  # SQLite Performance Optimizations
+  extraEnv:
+    - name: JELLYFIN_SQLITE_WAL_MODE
+      value: "true"
+    - name: JELLYFIN_SQLITE_CACHE_SIZE
+      value: "64000"  # 64MB cache
+  
   # Storage configuration
   storage:
     config:
