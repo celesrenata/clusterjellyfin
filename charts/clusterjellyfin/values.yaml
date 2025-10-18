@@ -2,11 +2,11 @@
 image:
   jellyfin:
     repository: ghcr.io/celesrenata/clusterjellyfin-main
-    tag: latest
+    tag: dev
     pullPolicy: IfNotPresent
   worker:
     repository: ghcr.io/celesrenata/clusterjellyfin-worker
-    tag: latest
+    tag: dev
     pullPolicy: IfNotPresent
 
 jellyfin:
