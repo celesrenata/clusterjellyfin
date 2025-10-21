@@ -19,15 +19,15 @@ build: build-jellyfin build-worker build-ipex-worker
 # Build individual images
 build-jellyfin:
 	@echo "🔨 Building Jellyfin main image..."
-	docker build -f $(DOCKER_DIR)/Dockerfile.jellyfin-rffmpeg -t $(JELLYFIN_IMAGE):$(TAG) .
+	docker build -f $(DOCKER_DIR)/Dockerfile.jellyfin-rffmpeg -t $(JELLYFIN_IMAGE):$(TAG) $(DOCKER_DIR)
 
 build-worker:
 	@echo "🔨 Building worker image..."
-	docker build -f $(DOCKER_DIR)/Dockerfile.rffmpeg-worker -t $(WORKER_IMAGE):$(TAG) .
+	docker build -f $(DOCKER_DIR)/Dockerfile.rffmpeg-worker -t $(WORKER_IMAGE):$(TAG) $(DOCKER_DIR)
 
 build-ipex-worker:
 	@echo "🔨 Building Intel IPEX worker image..."
-	docker build -f $(DOCKER_DIR)/Dockerfile.ipex-worker -t $(IPEX_WORKER_IMAGE):$(TAG) .
+	docker build -f $(DOCKER_DIR)/Dockerfile.ipex-worker -t $(IPEX_WORKER_IMAGE):$(TAG) $(DOCKER_DIR)
 
 # Push all images
 push: push-jellyfin push-worker push-ipex-worker
