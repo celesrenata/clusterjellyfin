@@ -1,0 +1,106 @@
+# Example configuration for SQLite to PostgreSQL Bridge Integration
+
+# PostgreSQL database configuration
+postgresql:
+  enabled: true
+  host: postgresql-service
+  port: 5432
+  database: jellyfin
+  username: jellyfin
+  password: "secure-password"
+  # Use existing secret for password
+  # passwordSecret: jellyfin-postgresql-secret
+
+# Bridge configuration
+bridge:
+  enabled: true
+  connectionPoolSize: 5
+  # Enable verbose logging for debugging
+  verbose: false
+
+# Jellyfin configuration
+jellyfin:
+  # Main Jellyfin pod configuration
+  replicas: 1
+  
+  # Resource allocation for main pod
+  resources:
+    requests:
+      cpu: 1000m
+      memory: 2Gi
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+
+  # Storage configuration
+  storage:
+    # Jellyfin configuration storage
+    config:
+      size: 10Gi
+      storageClass: "longhorn"  # Use your preferred storage class
+      accessMode: ReadWriteOnce
+    
+    # Transcoding cache (should be fast storage)
+    cache:
+      size: 50Gi
+      storageClass: "longhorn"  # Fast SSD storage recommended
+      accessMode: ReadWriteMany
+    
+    # Media library storage
+    media:
+      size: 5Ti
+      storageClass: "nfs-client"  # Large capacity storage
+      accessMode: ReadWriteMany
+
+# Transcoding worker configuration
+workers:
+  replicas: 3  # Number of worker pods
+  
+  # Resource allocation per worker
+  resources:
+    requests:
+      cpu: 2000m
+      memory: 4Gi
+    limits:
+      cpu: 4000m
+      memory: 8Gi
+
+  # GPU configuration
+  gpu:
+    enabled: false  # Set to true for hardware acceleration
+    resource: "gpu.intel.com/i915"  # or "nvidia.com/gpu"
+    limit: 1
+
+  # Enable privileged mode for GPU access
+  privileged: true  # Required for Intel Arc Graphics
+
+# Service configuration
+service:
+  type: ClusterIP  # Change to LoadBalancer or NodePort for external access
+  port: 8096
+  httpsPort: 8920
+
+# Ingress configuration (optional)
+ingress:
+  enabled: false  # Set to true for external access
+  className: "nginx"  # Your ingress controller
+  annotations: {}
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: jellyfin.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+    # - hosts:
+    #     - jellyfin.example.com
+    #   secretName: jellyfin-tls
+
+# Security context
+securityContext:
+  runAsUser: 1001
+  runAsGroup: 1001
+  fsGroup: 1001
+
+# Namespace (optional)
+namespace: jellyfin-system
