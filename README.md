@@ -258,6 +258,7 @@ kubectl delete namespace jellyfin-system
 
 ### Building from Source
 
+**Standard Helm Installation:**
 ```bash
 git clone https://github.com/celesrenata/clusterjellyfin
 cd clusterjellyfin
@@ -267,6 +268,26 @@ helm install jellyfin ./clusterjellyfin-*.tgz \
   --create-namespace \
   -f values.yaml
 ```
+
+**Custom Container Build (sqlmite branch):**
+```bash
+# Build all container images
+make docker-build
+
+# Push to registry
+make docker-push
+
+# Deploy with custom tag
+TAG=sqlmite ./runmefirst.sh
+```
+
+**Available Make Targets:**
+- `make build` - Build all container images
+- `make docker-build` - Alias for build
+- `make docker-push` - Push all images to registry
+- `make local-push` - Push to local registry
+- `make clean` - Remove local images
+- `./build.sh` - Build script with status output
 
 ### Contributing
 
