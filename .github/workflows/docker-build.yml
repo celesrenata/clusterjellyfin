@@ -2,7 +2,7 @@ name: Build and Push Docker Images
 
 on:
   push:
-    branches: [ main, clusterjellyfine-sqlmite ]
+    branches: [ main, clusterjellyfin-sqlmite ]
     tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
@@ -41,7 +41,7 @@ jobs:
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
           type=raw,value=latest,enable={{is_default_branch}}
-          type=raw,value=sqlmite,enable=${{ github.ref == 'refs/heads/clusterjellyfine-sqlmite' }}
+          type=raw,value=sqlmite,enable=${{ github.ref == 'refs/heads/clusterjellyfin-sqlmite' }}
 
     - name: Extract metadata for worker image
       id: meta-worker
@@ -54,7 +54,7 @@ jobs:
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
           type=raw,value=latest,enable={{is_default_branch}}
-          type=raw,value=sqlmite,enable=${{ github.ref == 'refs/heads/clusterjellyfine-sqlmite' }}
+          type=raw,value=sqlmite,enable=${{ github.ref == 'refs/heads/clusterjellyfin-sqlmite' }}
 
     - name: Build and push main image
       uses: docker/build-push-action@v5
