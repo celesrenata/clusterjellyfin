@@ -1,4 +1,4 @@
-{{- if and (eq .Values.jellyfin.storage.media.storageClass "") .Values.jellyfin.storage.media.nfs }}
+{{- if and (eq .Values.jellyfin.storage.media.storageClass "") .Values.jellyfin.storage.media.nfs.server }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -18,7 +18,7 @@ spec:
     name: {{ include "clusterjellyfin.fullname" . }}-media
 {{- end }}
 ---
-{{- if and (eq .Values.jellyfin.storage.config.storageClass "") .Values.jellyfin.storage.config.nfs }}
+{{- if and (eq .Values.jellyfin.storage.config.storageClass "") .Values.jellyfin.storage.config.nfs.server }}
 apiVersion: v1
 kind: PersistentVolume
 metadata:

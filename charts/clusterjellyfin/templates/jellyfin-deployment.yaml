@@ -101,6 +101,12 @@ spec:
           value: "{{ .Values.jellyfin.publishedServerUrl }}"
         - name: JELLYFIN_FFMPEG
           value: "/usr/local/bin/rffmpeg"
+        {{- if eq .Values.jellyfin.database.type "postgresql" }}
+        - name: JELLYFIN_DATABASE_TYPE
+          value: "Jellyfin-PostgreSQL"
+        - name: JELLYFIN_DATABASE_CONNECTION_STRING
+          value: "Host={{ include "clusterjellyfin.fullname" . }}-postgresql;Port=5432;Database={{ .Values.postgresql.auth.database }};Username={{ .Values.postgresql.auth.username }};Password={{ .Values.postgresql.auth.password }}"
+        {{- end }}
         {{- if .Values.jellyfin.extraEnv }}
         {{- toYaml .Values.jellyfin.extraEnv | nindent 8 }}
         {{- end }}

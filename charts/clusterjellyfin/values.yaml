@@ -1,8 +1,8 @@
 # Default values for clusterjellyfin
 image:
   jellyfin:
-    repository: ghcr.io/celesrenata/clusterjellyfin-main
-    tag: latest
+    repository: ghcr.io/celesrenata/jellyfin
+    tag: postgre
     pullPolicy: IfNotPresent
   worker:
     repository: ghcr.io/celesrenata/clusterjellyfin-worker
@@ -23,12 +23,22 @@ jellyfin:
   # Jellyfin configuration
   publishedServerUrl: ""  # Set to your public URL if needed
   
-  # SQLite Performance Optimizations
+  # Database configuration
+  database:
+    type: "postgresql"  # "sqlite" or "postgresql"
+    postgresql:
+      host: "postgresql"
+      port: 5432
+      database: "jellyfin"
+      username: "jellyfin"
+      password: "jellyfin"
+      # Connection string will be auto-generated if not provided
+      connectionString: ""
+  
+  # Environment variables
   extraEnv:
-    - name: JELLYFIN_SQLITE_WAL_MODE
-      value: "true"
-    - name: JELLYFIN_SQLITE_CACHE_SIZE
-      value: "64000"  # 64MB cache
+    - name: JELLYFIN_DATABASE_TYPE
+      value: "Jellyfin-PostgreSQL"
   
   # Storage configuration
   storage:
@@ -50,6 +60,26 @@ jellyfin:
       nfs:
         server: ""  # Configure your NFS server IP
         path: ""    # Configure your NFS media path
+
+# PostgreSQL database
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: "postgres"
+    username: "jellyfin"
+    password: "jellyfin"
+    database: "jellyfin"
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 1000m
+        memory: 2Gi
 
 workers:
   # Worker nodes for distributed transcoding

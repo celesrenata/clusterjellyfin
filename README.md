@@ -15,10 +15,10 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg. V
 
 ```
 ┌─────────────────┐    SSH/rffmpeg    ┌─────────────────┐
-│   Jellyfin      │ ────────────────▶ │   Worker Pods   │
+│   Jellyfin      │ ─────────────────▶ │   Worker Pods   │
 │   Main Pod      │                   │                 │
 │   (Web UI)      │                   │   FFmpeg +      │
-└─────────────────┘                   │   HW Accel      │
+└─────────────────┘                   │   HW Accel        │
                                       └─────────────────┘
 ```
 
@@ -67,7 +67,7 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg. V
 ### Basic Configuration
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+|------|---|---------|
 | `workers.replicas` | Number of transcoding workers | `3` |
 | `workers.privileged` | Enable privileged mode for GPU access | `true` |
 | `workers.gpu.enabled` | Enable GPU support | `false` |
@@ -76,7 +76,7 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg. V
 ### Storage Configuration
 
 | Parameter | Description | Default |
-|-----------|-------------|---------|
+|------|---|---------|
 | `jellyfin.storage.config.storageClass` | Storage class for config | `""` |
 | `jellyfin.storage.config.size` | Config storage size | `10Gi` |
 | `jellyfin.storage.media.storageClass` | Storage class for media | `""` |
@@ -294,3 +294,19 @@ MIT License - see LICENSE file for details.
 - [rffmpeg](https://github.com/joshuaboniface/rffmpeg) - Remote FFmpeg execution
 - [Kubernetes](https://kubernetes.io/) - Container orchestration
 - [Helm](https://helm.sh/) - Package manager for Kubernetes
+
+## Project Structure
+
+```
+.
+├── README.md                 # Project documentation
+├── example-values.yaml     # Example configuration
+├── install.sh              # Installation script
+├── runmefirst.sh             # Setup script
+├── runmelast.sh             # Cleanup script
+├── WORKER_POD_LAYOUT.md     # Worker pod layout documentation
+├── charts/
+│   └── clusterjellyfin/      # Helm chart for deployment
+├── docker/                   # Dockerfiles for container images
+├── packages/                # Built packages
+└── LICENSE                   # License file
