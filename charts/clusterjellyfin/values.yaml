@@ -1,9 +1,9 @@
 # Default values for clusterjellyfin
 image:
   jellyfin:
-    repository: ghcr.io/celesrenata/jellyfin
-    tag: postgresql
-    pullPolicy: IfNotPresent
+    repository: ghcr.io/celesrenata/clusterjellyfin
+    tag: main
+    pullPolicy: Always
   worker:
     repository: ghcr.io/celesrenata/clusterjellyfin-worker
     tag: latest
