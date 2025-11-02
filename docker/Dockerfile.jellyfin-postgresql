@@ -1,7 +1,7 @@
 # PostgreSQL-enabled Jellyfin with rffmpeg support for distributed transcoding
 # This Dockerfile builds Jellyfin with PostgreSQL and rffmpeg support for distributed transcoding
 
-FROM ghcr.io/celesrenata/jellyfin:postgresql
+FROM ghcr.io/celesrenata/jellyfin:latest
 
 # Switch to root to perform installations
 USER root
