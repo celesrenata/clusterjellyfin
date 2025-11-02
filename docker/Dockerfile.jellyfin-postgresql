@@ -3,6 +3,9 @@
 
 FROM ghcr.io/celesrenata/jellyfin:postgresql
 
+# Switch to root to perform installations
+USER root
+
 # Initialize Intel Arc GPU environment
 ENV LIBVA_DRIVER_NAME=iHD
 ENV LIBVA_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
@@ -15,8 +18,10 @@ RUN ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffmpeg && \
     ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffprobe
 
 # Create necessary directories
-# Note: jellyfin user/group already exists in the base image
 RUN mkdir -p /config/.ssh
+
+# Switch back to jellyfin user for runtime
+USER jellyfin
 
 # PostgreSQL environment variables will be set by Kubernetes deployment
 # Required variables: JELLYFIN_PostgreSql_Host, JELLYFIN_PostgreSql_Database, 
