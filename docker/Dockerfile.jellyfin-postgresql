@@ -32,5 +32,6 @@ USER jellyfin
 # Expose Jellyfin ports
 EXPOSE 8096 8920 1900/udp 7359/udp
 
-# Use the default Jellyfin entrypoint
-ENTRYPOINT ["/jellyfin/jellyfin"]
+# Use the default Jellyfin entrypoint with --nowebclient flag
+# The web client is missing from the base image
+ENTRYPOINT ["/jellyfin/jellyfin", "--nowebclient"]
