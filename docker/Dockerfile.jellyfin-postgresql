@@ -34,8 +34,8 @@ RUN ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffmpeg && \
     ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffprobe
 
 # Create necessary directories
-RUN mkdir -p /config/.ssh && \
-    chown -R jellyfin:jellyfin /config/.ssh
+# Note: jellyfin user/group already exists in the base image
+RUN mkdir -p /config/.ssh
 
 # Set environment variables for PostgreSQL support
 # These will be overridden by Kubernetes deployment env vars
