@@ -3,17 +3,12 @@
 
 FROM ghcr.io/celesrenata/jellyfin:postgresql
 
-# Install additional dependencies for rffmpeg
-# Note: PostgreSQL support and hardware acceleration already included in base image
-RUN pip3 install --no-cache-dir --break-system-packages click pyyaml || true
-
 # Initialize Intel Arc GPU environment
 ENV LIBVA_DRIVER_NAME=iHD
 ENV LIBVA_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
 
 # Install custom rffmpeg script for distributed transcoding
-COPY rffmpeg /usr/local/bin/rffmpeg
-RUN chmod +x /usr/local/bin/rffmpeg
+COPY --chmod=755 rffmpeg /usr/local/bin/rffmpeg
 
 # Create symlinks for rffmpeg
 RUN ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffmpeg && \
