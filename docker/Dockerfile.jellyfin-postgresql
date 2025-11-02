@@ -17,8 +17,9 @@ COPY --chmod=755 rffmpeg /usr/local/bin/rffmpeg
 RUN ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffmpeg && \
     ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffprobe
 
-# Create necessary directories
-RUN mkdir -p /config/.ssh
+# Create necessary directories with proper ownership
+RUN mkdir -p /config/.ssh /home/jellyfin/.local && \
+    chown -R jellyfin:jellyfin /home/jellyfin
 
 # Switch back to jellyfin user for runtime
 USER jellyfin
@@ -32,4 +33,3 @@ EXPOSE 8096 8920 1900/udp 7359/udp
 
 # Use the default Jellyfin entrypoint
 ENTRYPOINT ["/jellyfin/jellyfin"]
-
