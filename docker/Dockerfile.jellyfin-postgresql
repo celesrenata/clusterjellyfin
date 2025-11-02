@@ -6,6 +6,15 @@ FROM ghcr.io/celesrenata/jellyfin:latest
 # Switch to root to perform installations
 USER root
 
+# Install PostgreSQL 16 client to match server version
+RUN apt-get update && apt-get install -y \
+    wget \
+    gnupg \
+    && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
+    && echo "deb http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+    && apt-get update && apt-get install -y postgresql-client-16 \
+    && rm -rf /var/lib/apt/lists/*
+
 # Initialize Intel Arc GPU environment
 ENV LIBVA_DRIVER_NAME=iHD
 ENV LIBVA_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
