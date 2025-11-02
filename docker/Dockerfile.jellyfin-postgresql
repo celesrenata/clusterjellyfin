@@ -18,8 +18,9 @@ RUN ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffmpeg && \
     ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffprobe
 
 # Create necessary directories with proper ownership
-RUN mkdir -p /config/.ssh /home/jellyfin/.local && \
-    chown -R jellyfin:jellyfin /home/jellyfin
+RUN mkdir -p /config/.ssh /home/jellyfin/.local /home/jellyfin/.local/share && \
+    chown -R 1001:1001 /home/jellyfin && \
+    chmod -R 755 /home/jellyfin
 
 # Switch back to jellyfin user for runtime
 USER jellyfin
