@@ -3,19 +3,9 @@
 
 FROM ghcr.io/celesrenata/jellyfin:postgresql
 
-# Install additional dependencies for rffmpeg and hardware acceleration
-# Note: PostgreSQL support already included in base image
-RUN apt-get clean && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-    python3-pip \
-    openssh-client \
-    intel-media-va-driver \
-    intel-gpu-tools \
-    vainfo \
-    && pip3 install --no-cache-dir --break-system-packages click pyyaml \
-    && rm -rf /var/lib/apt/lists/*
+# Install additional dependencies for rffmpeg
+# Note: PostgreSQL support and hardware acceleration already included in base image
+RUN pip3 install --no-cache-dir --break-system-packages click pyyaml || true
 
 # Initialize Intel Arc GPU environment
 ENV LIBVA_DRIVER_NAME=iHD
