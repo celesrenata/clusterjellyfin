@@ -10,7 +10,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: celesrenata/jellyfin
+  IMAGE_NAME: celesrenata/clusterjellyfin
 
 jobs:
   build:
@@ -39,9 +39,9 @@ jobs:
       with:
         images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
         tags: |
-          type=raw,value=postgresql
-          type=raw,value=postgresql-latest
-          type=sha,prefix=postgresql-
+          type=raw,value=main
+          type=raw,value=latest
+          type=sha,prefix=main-
 
     - name: Build and push PostgreSQL Jellyfin image
       uses: docker/build-push-action@v5
