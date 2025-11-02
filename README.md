@@ -35,9 +35,14 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg. V
 
 The deployment uses these pre-built container images from GitHub Container Registry:
 
-- **Jellyfin (PostgreSQL)**: `ghcr.io/celesrenata/jellyfin:postgresql`
-  - PostgreSQL-enabled Jellyfin with rffmpeg support
-  - Built automatically on push to main branch
+- **Base Jellyfin (PostgreSQL)**: `ghcr.io/celesrenata/jellyfin:postgresql`
+  - PostgreSQL-enabled Jellyfin built from github.com/jellyfin fork
+  - This is the base image that already includes PostgreSQL support
+  
+- **ClusterJellyfin Main**: Built on top of the base PostgreSQL image
+  - Adds rffmpeg support for distributed transcoding
+  - Built automatically on push to main branch from `Dockerfile.jellyfin-postgresql`
+  - Uses the same image name/tag as it layers on top of the base
   
 - **Worker**: `ghcr.io/celesrenata/clusterjellyfin-worker:latest`
   - Transcoding worker with hardware acceleration support
@@ -351,27 +356,38 @@ helm install jellyfin ./clusterjellyfin-*.tgz \
 
 **Build Container Images:**
 
-The repository includes GitHub Actions workflows that automatically build and push images:
+The repository uses a layered approach:
 
-1. **PostgreSQL Jellyfin Image** (`.github/workflows/jellyfin-postgresql-build.yml`)
+1. **Base PostgreSQL Jellyfin** - Built separately from github.com/jellyfin fork
+   - This provides the core Jellyfin with PostgreSQL support
+   - Image: `ghcr.io/celesrenata/jellyfin:postgresql`
+   - Built from your PostgreSQL-enabled Jellyfin fork
+
+2. **ClusterJellyfin Main** (`.github/workflows/jellyfin-postgresql-build.yml`)
+   - Layers rffmpeg support on top of the base PostgreSQL image
    - Triggers on changes to `docker/Dockerfile.jellyfin-postgresql`
-   - Pushes to `ghcr.io/celesrenata/jellyfin:postgresql`
+   - Uses `FROM ghcr.io/celesrenata/jellyfin:postgresql`
+   - Pushes to the same tag, creating the complete image
    - Can be triggered manually via GitHub Actions
 
-2. **Worker Images** (`.github/workflows/docker-build.yml`)
+3. **Worker Images** (`.github/workflows/docker-build.yml`)
    - Triggers on push to main branch
-   - Builds both main and worker images
-   - Pushes to `ghcr.io/celesrenata/clusterjellyfin-main` and `ghcr.io/celesrenata/clusterjellyfin-worker`
+   - Builds worker images with transcoding support
+   - Pushes to `ghcr.io/celesrenata/clusterjellyfin-worker`
 
 **Manual Docker Build:**
 ```bash
-# Build PostgreSQL Jellyfin image
+# First, ensure base PostgreSQL Jellyfin image exists:
+# docker pull ghcr.io/celesrenata/jellyfin:postgresql
+# (This should be built from your Jellyfin fork)
+
+# Build ClusterJellyfin main (layers on top of base):
 docker build -f docker/Dockerfile.jellyfin-postgresql -t ghcr.io/celesrenata/jellyfin:postgresql ./docker
 
-# Build worker image
+# Build worker image:
 docker build -f docker/Dockerfile.rffmpeg-worker -t ghcr.io/celesrenata/clusterjellyfin-worker:latest ./docker
 
-# Push to registry (requires authentication)
+# Push to registry (requires authentication):
 docker push ghcr.io/celesrenata/jellyfin:postgresql
 docker push ghcr.io/celesrenata/clusterjellyfin-worker:latest
 ```

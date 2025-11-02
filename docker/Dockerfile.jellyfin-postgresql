@@ -1,24 +1,18 @@
 # PostgreSQL-enabled Jellyfin with rffmpeg support for distributed transcoding
-# This Dockerfile builds from the official Jellyfin image and adds PostgreSQL support
+# This Dockerfile builds from the PostgreSQL-enabled Jellyfin fork and adds rffmpeg support
 
-FROM jellyfin/jellyfin:latest
+FROM ghcr.io/celesrenata/jellyfin:postgresql
 
-# Install dependencies including PostgreSQL client libraries
+# Install additional dependencies for rffmpeg and hardware acceleration
+# PostgreSQL support is already included in the base image
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-click \
     python3-yaml \
-    python3-psycopg2 \
     openssh-client \
-    postgresql-client \
-    libpq-dev \
     intel-media-va-driver \
     intel-gpu-tools \
     vainfo \
-    libdrm2 \
-    libva-drm2 \
-    libva2 \
-    libigdgmm12 \
     && rm -rf /var/lib/apt/lists/*
 
 # Initialize Intel Arc GPU environment
@@ -37,10 +31,8 @@ RUN ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffmpeg && \
 # Note: jellyfin user/group already exists in the base image
 RUN mkdir -p /config/.ssh
 
-# Set environment variables for PostgreSQL support
-# These will be overridden by Kubernetes deployment env vars
-ENV JELLYFIN_DATABASE_TYPE=postgresql \
-    JELLYFIN_DATA_DIR=/config
+# PostgreSQL support is already configured in the base image
+# Additional environment variables will be set by Kubernetes deployment
 
 # Expose Jellyfin ports
 EXPOSE 8096 8920 1900/udp 7359/udp
