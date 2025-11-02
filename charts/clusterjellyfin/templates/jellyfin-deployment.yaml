@@ -101,6 +101,55 @@ spec:
           value: "{{ .Values.jellyfin.publishedServerUrl }}"
         - name: JELLYFIN_FFMPEG
           value: "/usr/local/bin/rffmpeg"
+        {{- if or .Values.postgresql.enabled (and (not .Values.postgresql.enabled) .Values.postgresql.external.host) }}
+        - name: JELLYFIN_DATABASE_TYPE
+          value: "postgresql"
+        - name: JELLYFIN_DATABASE_HOST
+          valueFrom:
+            secretKeyRef:
+              {{- if .Values.postgresql.enabled }}
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              {{- else }}
+              name: {{ .Values.postgresql.external.existingSecret }}
+              {{- end }}
+              key: host
+        - name: JELLYFIN_DATABASE_PORT
+          valueFrom:
+            secretKeyRef:
+              {{- if .Values.postgresql.enabled }}
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              {{- else }}
+              name: {{ .Values.postgresql.external.existingSecret }}
+              {{- end }}
+              key: port
+        - name: JELLYFIN_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              {{- if .Values.postgresql.enabled }}
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              {{- else }}
+              name: {{ .Values.postgresql.external.existingSecret }}
+              {{- end }}
+              key: database
+        - name: JELLYFIN_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              {{- if .Values.postgresql.enabled }}
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              {{- else }}
+              name: {{ .Values.postgresql.external.existingSecret }}
+              {{- end }}
+              key: username
+        - name: JELLYFIN_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              {{- if .Values.postgresql.enabled }}
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              {{- else }}
+              name: {{ .Values.postgresql.external.existingSecret }}
+              {{- end }}
+              key: password
+        {{- end }}
         {{- if .Values.jellyfin.extraEnv }}
         {{- toYaml .Values.jellyfin.extraEnv | nindent 8 }}
         {{- end }}

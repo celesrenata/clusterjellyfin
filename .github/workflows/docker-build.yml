@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME_MAIN: ${{ github.repository }}
+  IMAGE_NAME_MAIN: ${{ github.repository }}-main
   IMAGE_NAME_WORKER: ${{ github.repository }}-worker
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
           type=raw,value=latest,enable={{is_default_branch}}
-          type=raw,value=sqlmite,enable=${{ github.ref == 'refs/heads/clusterjellyfin-sqlmite' }}
+          type=raw,value=sqlite,enable=${{ github.ref == 'refs/heads/clusterjellyfin-sqlmite' }}
 
     - name: Extract metadata for worker image
       id: meta-worker
@@ -54,7 +54,7 @@ jobs:
           type=semver,pattern={{version}}
           type=semver,pattern={{major}}.{{minor}}
           type=raw,value=latest,enable={{is_default_branch}}
-          type=raw,value=sqlmite,enable=${{ github.ref == 'refs/heads/clusterjellyfin-sqlmite' }}
+          type=raw,value=sqlite,enable=${{ github.ref == 'refs/heads/clusterjellyfin-sqlmite' }}
 
     - name: Build and push main image
       uses: docker/build-push-action@v5

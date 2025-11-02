@@ -4,6 +4,7 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg. V
 
 ## Features
 
+- **PostgreSQL Support**: Uses PostgreSQL-enabled Jellyfin with optional self-hosted or external database
 - **Distributed Transcoding**: Main Jellyfin instance delegates transcoding to worker pods via SSH
 - **Hardware Acceleration**: Workers support Intel Arc Graphics, NVIDIA CUDA, AMD VAAPI
 - **Auto-scaling**: StatefulSet workers with configurable replica count
@@ -29,6 +30,18 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg. V
 - Kubernetes cluster
 - Helm 3.x
 - Storage solution (NFS server or dynamic provisioning)
+
+### Container Images
+
+The deployment uses these pre-built container images from GitHub Container Registry:
+
+- **Jellyfin (PostgreSQL)**: `ghcr.io/celesrenata/jellyfin:postgresql`
+  - PostgreSQL-enabled Jellyfin with rffmpeg support
+  - Built automatically on push to main branch
+  
+- **Worker**: `ghcr.io/celesrenata/clusterjellyfin-worker:latest`
+  - Transcoding worker with hardware acceleration support
+  - Built automatically on push to main branch
 
 ### Installation
 
@@ -68,10 +81,22 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg. V
 
 | Parameter | Description | Default |
 |-----------|-------------|---------|
+| `image.jellyfin.repository` | Jellyfin container image | `ghcr.io/celesrenata/jellyfin` |
+| `image.jellyfin.tag` | Jellyfin image tag | `postgresql` |
 | `workers.replicas` | Number of transcoding workers | `3` |
 | `workers.privileged` | Enable privileged mode for GPU access | `true` |
 | `workers.gpu.enabled` | Enable GPU support | `false` |
 | `service.type` | Service type (ClusterIP/LoadBalancer/NodePort) | `ClusterIP` |
+
+### PostgreSQL Configuration
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `postgresql.enabled` | Deploy PostgreSQL in cluster | `true` |
+| `postgresql.deployment.storage.size` | PostgreSQL storage size | `50Gi` |
+| `postgresql.deployment.storage.storageClass` | Storage class for PostgreSQL | `longhorn` |
+| `postgresql.external.host` | External PostgreSQL host (when enabled: false) | `""` |
+| `postgresql.external.existingSecret` | Secret name for external DB credentials | `jellyfin-postgresql-external` |
 
 ### Storage Configuration
 
@@ -83,6 +108,41 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg. V
 | `jellyfin.storage.media.size` | Media storage size | `1Ti` |
 | `jellyfin.storage.cache.storageClass` | Storage class for cache | `longhorn` |
 | `jellyfin.storage.cache.size` | Cache storage size | `50Gi` |
+
+### PostgreSQL Database
+
+**Self-Hosted PostgreSQL (Default):**
+```yaml
+postgresql:
+  enabled: true
+  deployment:
+    storage:
+      size: 50Gi
+      storageClass: "longhorn"
+```
+
+**External PostgreSQL:**
+```yaml
+postgresql:
+  enabled: false
+  external:
+    host: "postgres.example.com"
+    port: 5432
+    database: "jellyfin"
+    username: "jellyfin"
+    existingSecret: "jellyfin-postgresql-external"
+```
+
+Before deploying with external PostgreSQL, create the secret:
+```bash
+kubectl create secret generic jellyfin-postgresql-external \
+  --namespace jellyfin-system \
+  --from-literal=host=postgres.example.com \
+  --from-literal=port=5432 \
+  --from-literal=database=jellyfin \
+  --from-literal=username=jellyfin \
+  --from-literal=password=your-secure-password
+```
 
 ### Hardware Acceleration
 
@@ -127,8 +187,22 @@ service:
   type: LoadBalancer
 ```
 
-### Intel Arc Graphics Setup
+### Intel Arc Graphics with PostgreSQL Setup
 ```yaml
+# Use PostgreSQL-enabled Jellyfin image
+image:
+  jellyfin:
+    repository: ghcr.io/celesrenata/jellyfin
+    tag: postgresql
+
+# Deploy PostgreSQL in cluster
+postgresql:
+  enabled: true
+  deployment:
+    storage:
+      size: 50Gi
+      storageClass: "longhorn"
+
 workers:
   replicas: 3
   privileged: true
@@ -238,6 +312,12 @@ kubectl logs -n jellyfin-system deployment/jellyfin-clusterjellyfin-main | grep 
 - Check GPU resources are available: `kubectl describe node <gpu-node>`
 - Verify GPU drivers are installed on nodes
 
+**PostgreSQL connection issues:**
+- Check PostgreSQL pod is running: `kubectl get pods -n jellyfin-system -l component=postgresql`
+- View PostgreSQL logs: `kubectl logs -n jellyfin-system <postgresql-pod-name>`
+- Verify secret exists: `kubectl get secret -n jellyfin-system`
+- For external DB, ensure the external secret is created with all required keys (host, port, database, username, password)
+
 ## Upgrading
 
 ```bash
@@ -258,6 +338,7 @@ kubectl delete namespace jellyfin-system
 
 ### Building from Source
 
+**Build Helm Chart:**
 ```bash
 git clone https://github.com/celesrenata/clusterjellyfin
 cd clusterjellyfin
@@ -266,6 +347,33 @@ helm install jellyfin ./clusterjellyfin-*.tgz \
   --namespace jellyfin-system \
   --create-namespace \
   -f values.yaml
+```
+
+**Build Container Images:**
+
+The repository includes GitHub Actions workflows that automatically build and push images:
+
+1. **PostgreSQL Jellyfin Image** (`.github/workflows/jellyfin-postgresql-build.yml`)
+   - Triggers on changes to `docker/Dockerfile.jellyfin-postgresql`
+   - Pushes to `ghcr.io/celesrenata/jellyfin:postgresql`
+   - Can be triggered manually via GitHub Actions
+
+2. **Worker Images** (`.github/workflows/docker-build.yml`)
+   - Triggers on push to main branch
+   - Builds both main and worker images
+   - Pushes to `ghcr.io/celesrenata/clusterjellyfin-main` and `ghcr.io/celesrenata/clusterjellyfin-worker`
+
+**Manual Docker Build:**
+```bash
+# Build PostgreSQL Jellyfin image
+docker build -f docker/Dockerfile.jellyfin-postgresql -t ghcr.io/celesrenata/jellyfin:postgresql ./docker
+
+# Build worker image
+docker build -f docker/Dockerfile.rffmpeg-worker -t ghcr.io/celesrenata/clusterjellyfin-worker:latest ./docker
+
+# Push to registry (requires authentication)
+docker push ghcr.io/celesrenata/jellyfin:postgresql
+docker push ghcr.io/celesrenata/clusterjellyfin-worker:latest
 ```
 
 ### Contributing
@@ -278,11 +386,12 @@ helm install jellyfin ./clusterjellyfin-*.tgz \
 
 ## Validation Status
 
+- **PostgreSQL Integration**: Tested with self-hosted and external PostgreSQL databases
 - **Distributed Transcoding**: Tested with multiple concurrent streams
 - **Intel Arc Graphics**: Hardware acceleration confirmed working
 - **Load Balancing**: Multiple workers processing jobs simultaneously
 - **Cache Sharing**: Workers successfully writing to shared cache volume
-- **SSH Connectivity**: Automatic key generation and distribution working  
+- **SSH Connectivity**: Automatic key generation and distribution working
 
 ## License
 

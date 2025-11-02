@@ -3,7 +3,30 @@ entries:
   clusterjellyfin:
   - apiVersion: v2
     appVersion: 10.9.11
-    created: "2025-10-14T17:07:03.675271237-07:00"
+    created: "2025-11-02T10:38:15.609073707-08:00"
+    description: Kubernetes-deployed Jellyfin with PostgreSQL support, distributed
+      transcoding using rffmpeg and Intel Arc QSV acceleration
+    digest: 42c75f2482c09f00abb8386af8451de219bcbf48d1bc7f5a2e559df91ad6f76c
+    home: https://github.com/celesrenata/clusterjellyfin
+    keywords:
+    - jellyfin
+    - media
+    - transcoding
+    - rffmpeg
+    - intel-arc
+    - qsv
+    maintainers:
+    - name: celesrenata
+    name: clusterjellyfin
+    sources:
+    - https://github.com/celesrenata/clusterjellyfin
+    type: application
+    urls:
+    - https://celesrenata.github.io/clusterjellyfin/clusterjellyfin-0.2.0.tgz
+    version: 0.2.0
+  - apiVersion: v2
+    appVersion: 10.9.11
+    created: "2025-11-02T10:38:15.608170984-08:00"
     description: Kubernetes-deployed Jellyfin with distributed transcoding using rffmpeg
       and Intel Arc QSV acceleration
     digest: 8b17251b83750ef2b55f0240a86fb0f5c1765ef658c7508d94d49c22968abe0b
@@ -24,4 +47,4 @@ entries:
     urls:
     - https://celesrenata.github.io/clusterjellyfin/clusterjellyfin-0.1.1.tgz
     version: 0.1.1
-generated: "2025-10-14T17:07:03.674216564-07:00"
+generated: "2025-11-02T10:38:15.607627233-08:00"

@@ -1,8 +1,8 @@
 # Default values for clusterjellyfin
 image:
   jellyfin:
-    repository: ghcr.io/celesrenata/clusterjellyfin-main
-    tag: latest
+    repository: ghcr.io/celesrenata/jellyfin
+    tag: postgresql
     pullPolicy: IfNotPresent
   worker:
     repository: ghcr.io/celesrenata/clusterjellyfin-worker
@@ -111,3 +111,46 @@ securityContext:
 
 # Namespace
 namespace: jellyfin-system
+
+# PostgreSQL database configuration
+postgresql:
+  # Enable to deploy PostgreSQL in the cluster
+  # Set to false to use an external PostgreSQL instance
+  enabled: true
+  
+  # PostgreSQL connection settings
+  connection:
+    # Leave host empty for self-hosted (auto-configured to service name)
+    host: ""
+    port: 5432
+    database: "jellyfin"
+    username: "jellyfin"
+    # Password will be auto-generated for self-hosted or provided via existingSecret for external
+  
+  # Self-hosted PostgreSQL configuration (when enabled: true)
+  deployment:
+    replicas: 1
+    image:
+      repository: postgres
+      tag: "16-alpine"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    storage:
+      size: 50Gi
+      storageClass: "longhorn"
+      accessMode: ReadWriteOnce
+  
+  # Existing PostgreSQL connection (when enabled: false)
+  external:
+    host: ""  # e.g., "postgres.example.com"
+    port: 5432
+    database: "jellyfin"
+    username: "jellyfin"
+    # Create secret manually: kubectl create secret generic jellyfin-postgresql-external --from-literal=password=yourpassword
+    existingSecret: "jellyfin-postgresql-external"

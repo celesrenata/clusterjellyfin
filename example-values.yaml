@@ -4,8 +4,8 @@
 # Container images (usually defaults are fine)
 image:
   jellyfin:
-    repository: ghcr.io/celesrenata/clusterjellyfin-main
-    tag: latest
+    repository: ghcr.io/celesrenata/jellyfin
+    tag: postgresql
     pullPolicy: IfNotPresent
   worker:
     repository: ghcr.io/celesrenata/clusterjellyfin-worker
@@ -118,6 +118,39 @@ securityContext:
 # Namespace (optional)
 namespace: jellyfin-system
 
+# PostgreSQL database configuration
+postgresql:
+  # Enable to deploy PostgreSQL in the cluster
+  # Set to false to use an external PostgreSQL instance
+  enabled: true
+  
+  # Self-hosted PostgreSQL configuration (when enabled: true)
+  deployment:
+    replicas: 1
+    image:
+      repository: postgres
+      tag: "16-alpine"
+      pullPolicy: IfNotPresent
+    resources:
+      requests:
+        cpu: 500m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    storage:
+      size: 50Gi
+      storageClass: "longhorn"
+      accessMode: ReadWriteOnce
+  
+  # Existing PostgreSQL connection (when enabled: false)
+  # external:
+  #   host: "postgres.example.com"
+  #   port: 5432
+  #   database: "jellyfin"
+  #   username: "jellyfin"
+  #   existingSecret: "jellyfin-postgresql-external"
+
 # Example configurations for different scenarios:
 
 # Example 1: NVIDIA GPU Configuration
@@ -176,3 +209,22 @@ namespace: jellyfin-system
 #     - secretName: jellyfin-tls
 #       hosts:
 #         - jellyfin.yourdomain.com
+
+# Example 6: External PostgreSQL Database
+# postgresql:
+#   enabled: false
+#   external:
+#     host: "postgres.example.com"
+#     port: 5432
+#     database: "jellyfin"
+#     username: "jellyfin"
+#     existingSecret: "jellyfin-postgresql-external"
+# 
+# Before deploying, create the external secret:
+# kubectl create secret generic jellyfin-postgresql-external \
+#   --namespace jellyfin-system \
+#   --from-literal=host=postgres.example.com \
+#   --from-literal=port=5432 \
+#   --from-literal=database=jellyfin \
+#   --from-literal=username=jellyfin \
+#   --from-literal=password=your-secure-password

@@ -1,0 +1,77 @@
+{{- if .Values.postgresql.enabled }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "clusterjellyfin.labels" . | nindent 4 }}
+    component: postgresql
+spec:
+  serviceName: {{ include "clusterjellyfin.fullname" . }}-postgresql
+  replicas: {{ .Values.postgresql.deployment.replicas }}
+  selector:
+    matchLabels:
+      {{- include "clusterjellyfin.selectorLabels" . | nindent 6 }}
+      component: postgresql
+  template:
+    metadata:
+      labels:
+        {{- include "clusterjellyfin.selectorLabels" . | nindent 8 }}
+        component: postgresql
+    spec:
+      containers:
+      - name: postgresql
+        image: "{{ .Values.postgresql.deployment.image.repository }}:{{ .Values.postgresql.deployment.image.tag }}"
+        imagePullPolicy: {{ .Values.postgresql.deployment.image.pullPolicy }}
+        env:
+        - name: POSTGRES_DB
+          value: {{ .Values.postgresql.connection.database | quote }}
+        - name: POSTGRES_USER
+          value: {{ .Values.postgresql.connection.username | quote }}
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              key: password
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        ports:
+        - containerPort: 5432
+          name: postgresql
+        volumeMounts:
+        - name: postgresql-data
+          mountPath: /var/lib/postgresql/data
+        resources:
+          {{- toYaml .Values.postgresql.deployment.resources | nindent 10 }}
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U {{ .Values.postgresql.connection.username }}
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U {{ .Values.postgresql.connection.username }}
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+  volumeClaimTemplates:
+  - metadata:
+      name: postgresql-data
+    spec:
+      accessModes:
+      - {{ .Values.postgresql.deployment.storage.accessMode }}
+      {{- if .Values.postgresql.deployment.storage.storageClass }}
+      storageClassName: {{ .Values.postgresql.deployment.storage.storageClass }}
+      {{- end }}
+      resources:
+        requests:
+          storage: {{ .Values.postgresql.deployment.storage.size }}
+{{- end }}
