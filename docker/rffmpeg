@@ -1,7 +1,14 @@
 #!/bin/bash
 
-# Local ffmpeg for validation
-LOCAL_FFMPEG="/usr/lib/jellyfin-ffmpeg/ffmpeg"
+# Local ffmpeg for validation (fallback to system ffmpeg if jellyfin-ffmpeg not available)
+if [ -x "/usr/lib/jellyfin-ffmpeg/ffmpeg" ]; then
+    LOCAL_FFMPEG="/usr/lib/jellyfin-ffmpeg/ffmpeg"
+elif [ -x "/usr/bin/ffmpeg" ]; then
+    LOCAL_FFMPEG="/usr/bin/ffmpeg"
+else
+    # If no ffmpeg found, try to find it
+    LOCAL_FFMPEG=$(which ffmpeg 2>/dev/null || echo "/usr/bin/ffmpeg")
+fi
 
 # Use service name for load balancing across workers
 WORKER_SERVICE="jellyfin-clusterjellyfin-workers"
