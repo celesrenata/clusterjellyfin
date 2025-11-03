@@ -98,6 +98,37 @@ spec:
           runAsUser: {{ .Values.securityContext.runAsUser }}
         env:
         - name: JELLYFIN_PublishedServerUrl
+          value: {{ .Values.jellyfin.publishedServerUrl | quote }}
+        - name: JELLYFIN_FFMPEG
+          value: "/usr/local/bin/rffmpeg"
+        - name: JELLYFIN_DATABASE_TYPE
+          value: "postgresql"
+        - name: JELLYFIN_DATABASE_HOST
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              key: host
+        - name: JELLYFIN_DATABASE_PORT
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              key: port
+        - name: JELLYFIN_DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              key: database
+        - name: JELLYFIN_DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              key: username
+        - name: JELLYFIN_DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              key: password
+        - name: JELLYFIN_PublishedServerUrl
           value: "{{ .Values.jellyfin.publishedServerUrl }}"
         - name: JELLYFIN_FFMPEG
           value: "/usr/local/bin/rffmpeg"
