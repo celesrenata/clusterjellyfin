@@ -2,7 +2,7 @@ apiVersion: v2
 name: clusterjellyfin
 description: Kubernetes-deployed Jellyfin with distributed transcoding using rffmpeg and Intel Arc QSV acceleration
 type: application
-version: 0.1.48
+version: 0.1.49
 appVersion: "10.9.11"
 keywords:
   - jellyfin
