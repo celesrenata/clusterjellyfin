@@ -1041,9 +1041,21 @@ if __name__ == "__main__":
         # Check if we have ffmpeg arguments (like -version)
         if len(all_args) > 1:
             ffmpeg_args = all_args[1:]
-            # If any special flags are present, treat as ffmpeg call
+            # If any special flags are present, run directly without database
             if any(item in config["special_flags"] for item in ffmpeg_args):
-                run_ffmpeg(config, ffmpeg_args)
+                # For validation calls, run local ffmpeg directly
+                import subprocess
+                try:
+                    result = subprocess.run([config["ffmpeg_command"]] + ffmpeg_args, 
+                                          capture_output=True, text=True)
+                    if result.stdout:
+                        print(result.stdout, end='')
+                    if result.stderr:
+                        print(result.stderr, end='', file=sys.stderr)
+                    sys.exit(result.returncode)
+                except Exception as e:
+                    print(f"Error running ffmpeg: {e}", file=sys.stderr)
+                    sys.exit(1)
             else:
                 run_control(config)
         else:
