@@ -1038,7 +1038,16 @@ if __name__ == "__main__":
     config = load_config()
 
     if "rffmpeg" in cmd_name:
-        run_control(config)
+        # Check if we have ffmpeg arguments (like -version)
+        if len(all_args) > 1:
+            ffmpeg_args = all_args[1:]
+            # If any special flags are present, treat as ffmpeg call
+            if any(item in config["special_flags"] for item in ffmpeg_args):
+                run_ffmpeg(config, ffmpeg_args)
+            else:
+                run_control(config)
+        else:
+            run_control(config)
 
     else:
         ffmpeg_args = all_args[1:]

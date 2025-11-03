@@ -44,6 +44,15 @@ ENV JELLYFIN_POSTGRES_CONNECTION_STRING=""
 COPY rffmpeg /usr/local/bin/rffmpeg
 RUN chmod +x /usr/local/bin/rffmpeg
 
+# Create rffmpeg configuration
+RUN mkdir -p /etc/rffmpeg && \
+    echo 'commands:' > /etc/rffmpeg/rffmpeg.yml && \
+    echo '  ffmpeg: /usr/lib/jellyfin-ffmpeg/ffmpeg' >> /etc/rffmpeg/rffmpeg.yml && \
+    echo '  ffprobe: /usr/lib/jellyfin-ffmpeg/ffprobe' >> /etc/rffmpeg/rffmpeg.yml
+
+# Set rffmpeg config path
+ENV RFFMPEG_CONFIG_FILE=/etc/rffmpeg/rffmpeg.yml
+
 # Create symlinks
 RUN ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffmpeg && \
     ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffprobe
