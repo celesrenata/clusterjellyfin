@@ -1041,6 +1041,10 @@ if __name__ == "__main__":
         # Check if we have ffmpeg arguments (like -version)
         if len(all_args) > 1:
             ffmpeg_args = all_args[1:]
+            # Debug: print what we're checking
+            sys.stderr.write(f"DEBUG: rffmpeg called with args: {ffmpeg_args}\n")
+            sys.stderr.write(f"DEBUG: special_flags: {config['special_flags']}\n")
+            
             # If any special flags are present, run directly without database
             if any(item in config["special_flags"] for item in ffmpeg_args):
                 # For validation calls, run local ffmpeg directly
@@ -1048,10 +1052,18 @@ if __name__ == "__main__":
                 import os
                 try:
                     ffmpeg_path = config.get("ffmpeg_command", "/usr/lib/jellyfin-ffmpeg/ffmpeg")
+                    sys.stderr.write(f"DEBUG: Using ffmpeg path: {ffmpeg_path}\n")
+                    sys.stderr.write(f"DEBUG: Running command: {[ffmpeg_path] + ffmpeg_args}\n")
+                    
                     result = subprocess.run([ffmpeg_path] + ffmpeg_args, 
                                           stdout=subprocess.PIPE, 
                                           stderr=subprocess.PIPE, 
                                           text=True)
+                    
+                    sys.stderr.write(f"DEBUG: Return code: {result.returncode}\n")
+                    sys.stderr.write(f"DEBUG: Stdout length: {len(result.stdout) if result.stdout else 0}\n")
+                    sys.stderr.write(f"DEBUG: Stderr length: {len(result.stderr) if result.stderr else 0}\n")
+                    
                     # Output stdout and stderr exactly as ffmpeg would
                     if result.stdout:
                         sys.stdout.write(result.stdout)
@@ -1061,11 +1073,14 @@ if __name__ == "__main__":
                         sys.stderr.flush()
                     exit(result.returncode)
                 except Exception as e:
+                    sys.stderr.write(f"DEBUG: Exception occurred: {e}\n")
                     sys.stderr.write(f"rffmpeg error: {e}\n")
                     exit(1)
             else:
+                sys.stderr.write("DEBUG: No special flags found, running control\n")
                 run_control(config)
         else:
+            sys.stderr.write("DEBUG: No args provided, running control\n")
             run_control(config)
 
     else:
