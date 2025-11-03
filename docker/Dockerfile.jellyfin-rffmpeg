@@ -42,4 +42,8 @@ RUN ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffmpeg && \
     ln -sf /usr/local/bin/rffmpeg /usr/local/bin/ffprobe
 
 # Create directories (jellyfin user already exists in base image)
-RUN mkdir -p /config/.ssh
+RUN mkdir -p /config/.ssh /tmp/.fontconfig && \
+    chmod 777 /tmp/.fontconfig
+
+# Set fontconfig cache directory
+ENV FONTCONFIG_PATH=/tmp/.fontconfig
