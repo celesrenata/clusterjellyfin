@@ -6,7 +6,7 @@ FROM ghcr.io/celesrenata/jellyfin:latest
 # Switch to root to perform installations
 USER root
 
-# Install PostgreSQL 16 client and jellyfin-ffmpeg
+# Install PostgreSQL 16 client and jellyfin-ffmpeg7
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     && wget -O - https://repo.jellyfin.org/install-debuntu.sh | bash \
     && apt-get update && apt-get install -y \
         postgresql-client-16 \
-        jellyfin-ffmpeg6 \
+        jellyfin-ffmpeg7 \
     && rm -rf /var/lib/apt/lists/*
 
 # Initialize Intel Arc GPU environment
