@@ -101,9 +101,7 @@ spec:
           value: {{ .Values.jellyfin.publishedServerUrl | quote }}
         - name: JELLYFIN_FFMPEG
           value: "/usr/local/bin/rffmpeg"
-        - name: JELLYFIN_DATABASE_TYPE
-          value: "postgresql"
-        - name: JELLYFIN_DATABASE_HOST
+        - name: JELLYFIN_POSTGRES_HOST
           valueFrom:
             secretKeyRef:
               {{- if .Values.postgresql.enabled }}
@@ -112,7 +110,7 @@ spec:
               name: {{ .Values.postgresql.external.existingSecret }}
               {{- end }}
               key: host
-        - name: JELLYFIN_DATABASE_PORT
+        - name: JELLYFIN_POSTGRES_PORT
           valueFrom:
             secretKeyRef:
               {{- if .Values.postgresql.enabled }}
@@ -121,7 +119,7 @@ spec:
               name: {{ .Values.postgresql.external.existingSecret }}
               {{- end }}
               key: port
-        - name: JELLYFIN_DATABASE_NAME
+        - name: JELLYFIN_POSTGRES_DATABASE
           valueFrom:
             secretKeyRef:
               {{- if .Values.postgresql.enabled }}
@@ -130,7 +128,7 @@ spec:
               name: {{ .Values.postgresql.external.existingSecret }}
               {{- end }}
               key: database
-        - name: JELLYFIN_DATABASE_USERNAME
+        - name: JELLYFIN_POSTGRES_USER
           valueFrom:
             secretKeyRef:
               {{- if .Values.postgresql.enabled }}
@@ -139,7 +137,7 @@ spec:
               name: {{ .Values.postgresql.external.existingSecret }}
               {{- end }}
               key: username
-        - name: JELLYFIN_DATABASE_PASSWORD
+        - name: JELLYFIN_POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               {{- if .Values.postgresql.enabled }}
