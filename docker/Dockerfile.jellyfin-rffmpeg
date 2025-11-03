@@ -25,6 +25,14 @@ RUN apt-get update && apt-get install -y \
 ENV LIBVA_DRIVER_NAME=iHD
 ENV LIBVA_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
 
+# Override hardcoded PostgreSQL environment variables to use Kubernetes secrets
+ENV JELLYFIN_POSTGRES_HOST=""
+ENV JELLYFIN_POSTGRES_PORT=""
+ENV JELLYFIN_POSTGRES_DATABASE=""
+ENV JELLYFIN_POSTGRES_USER=""
+ENV JELLYFIN_POSTGRES_PASSWORD=""
+ENV JELLYFIN_POSTGRES_CONNECTION_STRING=""
+
 # Install our custom rffmpeg script
 COPY rffmpeg /usr/local/bin/rffmpeg
 RUN chmod +x /usr/local/bin/rffmpeg
