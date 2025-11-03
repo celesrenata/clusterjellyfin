@@ -10,10 +10,21 @@ USER root
 RUN apt-get update && apt-get install -y \
     wget \
     gnupg \
+    curl \
     && wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add - \
     && echo "deb http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
     && apt-get update && apt-get install -y postgresql-client-16 \
     && rm -rf /var/lib/apt/lists/*
+
+# Install jellyfin-ffmpeg for local validation
+RUN mkdir -p /usr/lib/jellyfin-ffmpeg && \
+    cd /tmp && \
+    FFMPEG_VERSION="6.0.1-8" && \
+    wget -q https://repo.jellyfin.org/files/ffmpeg/debian/latest-6.x/amd64/jellyfin-ffmpeg6_${FFMPEG_VERSION}_amd64.deb && \
+    dpkg -x jellyfin-ffmpeg6_${FFMPEG_VERSION}_amd64.deb /tmp/jellyfin-ffmpeg && \
+    cp -r /tmp/jellyfin-ffmpeg/usr/lib/jellyfin-ffmpeg/* /usr/lib/jellyfin-ffmpeg/ && \
+    rm -rf /tmp/jellyfin-ffmpeg* && \
+    chmod +x /usr/lib/jellyfin-ffmpeg/ffmpeg /usr/lib/jellyfin-ffmpeg/ffprobe
 
 # Initialize Intel Arc GPU environment
 ENV LIBVA_DRIVER_NAME=iHD
@@ -44,4 +55,3 @@ EXPOSE 8096 8920 1900/udp 7359/udp
 # Use the entrypoint from base image which includes proper arguments
 # (--datadir /config --cachedir /cache --nowebclient --ffmpeg /usr/local/bin/rffmpeg)
 # Rebuild with updated base image
-
