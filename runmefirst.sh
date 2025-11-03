@@ -20,19 +20,16 @@ if helm list -n jellyfin-system | grep -q jellyfin; then
     sleep 5
 fi
 
+# Create external PostgreSQL secret
+echo "🔐 Creating PostgreSQL secret..."
+kubectl apply -f postgresql-secret.yaml
+
 # Deploy ClusterJellyfin
 echo "🎬 Installing ClusterJellyfin..."
 helm install jellyfin clusterjellyfin/clusterjellyfin \
   --namespace jellyfin-system \
   --create-namespace \
-  --set workers.gpu.enabled=false \
-  --set workers.privileged=true \
-  --set service.type=ClusterIP \
-  --set jellyfin.storage.config.nfs.server=192.168.42.8 \
-  --set jellyfin.storage.config.nfs.path=/volume1/Kubernetes/clusterjellyfin/data \
-  --set jellyfin.storage.media.nfs.server=192.168.42.8 \
-  --set jellyfin.storage.media.nfs.path=/volume1/Plex \
-  --set jellyfin.storage.cache.storageClass=longhorn
+  -f personal-values.yaml
 
 echo "⏳ Waiting for pods to be ready..."
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=clusterjellyfin -n jellyfin-system --timeout=300s
