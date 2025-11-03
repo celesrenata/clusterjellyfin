@@ -1045,17 +1045,24 @@ if __name__ == "__main__":
             if any(item in config["special_flags"] for item in ffmpeg_args):
                 # For validation calls, run local ffmpeg directly
                 import subprocess
+                import os
                 try:
-                    result = subprocess.run([config["ffmpeg_command"]] + ffmpeg_args, 
-                                          capture_output=True, text=True)
+                    ffmpeg_path = config.get("ffmpeg_command", "/usr/lib/jellyfin-ffmpeg/ffmpeg")
+                    result = subprocess.run([ffmpeg_path] + ffmpeg_args, 
+                                          stdout=subprocess.PIPE, 
+                                          stderr=subprocess.PIPE, 
+                                          text=True)
+                    # Output stdout and stderr exactly as ffmpeg would
                     if result.stdout:
-                        print(result.stdout, end='')
+                        sys.stdout.write(result.stdout)
+                        sys.stdout.flush()
                     if result.stderr:
-                        print(result.stderr, end='', file=sys.stderr)
-                    sys.exit(result.returncode)
+                        sys.stderr.write(result.stderr)
+                        sys.stderr.flush()
+                    exit(result.returncode)
                 except Exception as e:
-                    print(f"Error running ffmpeg: {e}", file=sys.stderr)
-                    sys.exit(1)
+                    sys.stderr.write(f"rffmpeg error: {e}\n")
+                    exit(1)
             else:
                 run_control(config)
         else:
