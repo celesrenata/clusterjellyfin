@@ -58,3 +58,7 @@ RUN mkdir -p /config/.ssh /tmp/.fontconfig && \
 
 # Set fontconfig cache directory
 ENV FONTCONFIG_PATH=/tmp/.fontconfig
+
+# Debug: Add sleep to inspect container
+RUN echo '#!/bin/bash\necho "DEBUG: Sleeping for inspection..."\nsleep 3600' > /debug-sleep.sh && chmod +x /debug-sleep.sh
+CMD ["/debug-sleep.sh"]
