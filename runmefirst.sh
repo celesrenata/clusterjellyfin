@@ -34,9 +34,6 @@ helm install jellyfin clusterjellyfin/clusterjellyfin \
 echo "⏳ Waiting for pods to be ready..."
 kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=clusterjellyfin -n jellyfin-system --timeout=300s
 
-echo "🌐 Deploying ingress..."
-kubectl apply -f jellyfin-ingress.yaml
-
 echo "✅ ClusterJellyfin deployed successfully!"
 echo ""
 echo "🌐 Access Jellyfin:"
