@@ -58,6 +58,3 @@ RUN mkdir -p /config/.ssh /tmp/.fontconfig && \
 
 # Set fontconfig cache directory
 ENV FONTCONFIG_PATH=/tmp/.fontconfig
-
-# Debug: Override entrypoint completely
-ENTRYPOINT ["sleep", "3600"]
