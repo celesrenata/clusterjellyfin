@@ -76,6 +76,17 @@ workers:
   # Enable privileged mode for GPU access
   privileged: true
 
+# PostgreSQL configuration
+postgresql:
+  # Set to false to use external PostgreSQL
+  enabled: false
+  external:
+    host: ""
+    port: 5432
+    database: "jellyfin"
+    username: "jellyfin"
+    existingSecret: ""  # Name of existing secret with PostgreSQL credentials
+
 rffmpeg:
   # rffmpeg configuration
   config:
