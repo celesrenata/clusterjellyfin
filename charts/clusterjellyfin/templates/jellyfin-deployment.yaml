@@ -18,6 +18,15 @@ spec:
         {{- include "clusterjellyfin.selectorLabels" . | nindent 8 }}
         component: main
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - gremlin-1
       securityContext:
         runAsUser: {{ .Values.securityContext.runAsUser }}
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
@@ -86,6 +95,8 @@ spec:
           esac
           SCRIPT_END
           chmod +x /shared/rffmpeg
+          # Create ffprobe as copy of rffmpeg
+          cp /shared/rffmpeg /shared/ffprobe
           echo "Init container completed successfully"
         volumeMounts:
         - name: shared-rffmpeg
@@ -98,15 +109,58 @@ spec:
           runAsUser: {{ .Values.securityContext.runAsUser }}
         env:
         - name: JELLYFIN_PublishedServerUrl
+          value: {{ .Values.jellyfin.publishedServerUrl | quote }}
+        - name: JELLYFIN_FFMPEG
+          value: "/shared/rffmpeg"
+        - name: JELLYFIN_POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              {{- if .Values.postgresql.enabled }}
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              {{- else }}
+              name: {{ .Values.postgresql.external.existingSecret }}
+              {{- end }}
+              key: host
+        - name: JELLYFIN_POSTGRES_PORT
+          valueFrom:
+            secretKeyRef:
+              {{- if .Values.postgresql.enabled }}
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              {{- else }}
+              name: {{ .Values.postgresql.external.existingSecret }}
+              {{- end }}
+              key: port
+        - name: JELLYFIN_POSTGRES_DATABASE
+          valueFrom:
+            secretKeyRef:
+              {{- if .Values.postgresql.enabled }}
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              {{- else }}
+              name: {{ .Values.postgresql.external.existingSecret }}
+              {{- end }}
+              key: database
+        - name: JELLYFIN_POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              {{- if .Values.postgresql.enabled }}
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              {{- else }}
+              name: {{ .Values.postgresql.external.existingSecret }}
+              {{- end }}
+              key: username
+        - name: JELLYFIN_POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              {{- if .Values.postgresql.enabled }}
+              name: {{ include "clusterjellyfin.fullname" . }}-postgresql
+              {{- else }}
+              name: {{ .Values.postgresql.external.existingSecret }}
+              {{- end }}
+              key: password
+        - name: JELLYFIN_PublishedServerUrl
           value: "{{ .Values.jellyfin.publishedServerUrl }}"
         - name: JELLYFIN_FFMPEG
-          value: "/usr/local/bin/rffmpeg"
-        {{- if eq .Values.jellyfin.database.type "postgresql" }}
-        - name: JELLYFIN_DATABASE_TYPE
-          value: "Jellyfin-PostgreSQL"
-        - name: JELLYFIN_DATABASE_CONNECTION_STRING
-          value: "Host={{ include "clusterjellyfin.fullname" . }}-postgresql;Port=5432;Database={{ .Values.postgresql.auth.database }};Username={{ .Values.postgresql.auth.username }};Password={{ .Values.postgresql.auth.password }}"
-        {{- end }}
+          value: "/shared/rffmpeg"
         {{- if .Values.jellyfin.extraEnv }}
         {{- toYaml .Values.jellyfin.extraEnv | nindent 8 }}
         {{- end }}
@@ -129,9 +183,6 @@ spec:
         - name: rffmpeg-config
           mountPath: /config/rffmpeg.yml
           subPath: rffmpeg.yml
-        - name: shared-rffmpeg
-          mountPath: /usr/local/bin/rffmpeg
-          subPath: rffmpeg
         - name: main-ssh-keys
           mountPath: /home/jellyfin/.ssh
           readOnly: true
