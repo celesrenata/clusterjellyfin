@@ -3,7 +3,7 @@ FROM ghcr.io/celesrenata/jellyfin:postgres
 # Install dependencies and Intel Arc GPU drivers
 RUN apt-get update && apt-get install -y software-properties-common curl gpg && \
     curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/trusted.gpg.d/jellyfin.gpg && \
-    echo "deb [arch=$(dpkg --print-architecture)] https://repo.jellyfin.org/ubuntu $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/jellyfin.list && \
+    echo "deb [arch=$(dpkg --print-architecture)] https://repo.jellyfin.org/debian $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/jellyfin.list && \
     apt-get update && apt-get install -y \
     python3 \
     python3-click \
