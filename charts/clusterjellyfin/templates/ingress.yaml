@@ -40,6 +40,10 @@ metadata:
   {{- with .Values.ingress.httpsAnnotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
+    # WebSocket and connection stability
+    traefik.ingress.kubernetes.io/service.sticky.cookie: "true"
+    traefik.ingress.kubernetes.io/service.sticky.cookie.name: "jellyfin-server"
+    traefik.ingress.kubernetes.io/router.timeout: "300s"
   {{- end }}
 spec:
   {{- if .Values.ingress.className }}
