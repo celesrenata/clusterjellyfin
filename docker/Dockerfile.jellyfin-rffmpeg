@@ -40,8 +40,8 @@ ENV JELLYFIN_POSTGRES_USER=""
 ENV JELLYFIN_POSTGRES_PASSWORD=""
 ENV JELLYFIN_POSTGRES_CONNECTION_STRING=""
 
-# Install our custom rffmpeg script
-COPY rffmpeg /usr/local/bin/rffmpeg
+# Install the proper rffmpeg from build stage
+COPY --from=build /rffmpeg/rffmpeg /usr/local/bin/rffmpeg
 RUN chmod +x /usr/local/bin/rffmpeg
 
 # Create rffmpeg configuration
