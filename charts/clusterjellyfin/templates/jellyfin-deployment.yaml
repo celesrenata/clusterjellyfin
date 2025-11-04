@@ -86,6 +86,8 @@ spec:
           esac
           SCRIPT_END
           chmod +x /shared/rffmpeg
+          # Create ffprobe as copy of rffmpeg
+          cp /shared/rffmpeg /shared/ffprobe
           echo "Init container completed successfully"
         volumeMounts:
         - name: shared-rffmpeg
@@ -175,6 +177,9 @@ spec:
         - name: shared-rffmpeg
           mountPath: /usr/local/bin/rffmpeg
           subPath: rffmpeg
+        - name: shared-rffmpeg
+          mountPath: /usr/local/bin/ffprobe
+          subPath: ffprobe
         - name: main-ssh-keys
           mountPath: /home/jellyfin/.ssh
           readOnly: true
