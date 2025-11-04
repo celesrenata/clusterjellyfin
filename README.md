@@ -33,6 +33,29 @@
 
 Follow the [INSTALL.md](INSTALL.md) guide for detailed setup instructions.
 
+1. **Set up PostgreSQL database (choose one):**
+   
+   **Option A: External PostgreSQL (recommended for production):**
+   ```bash
+   # Create database and user on your PostgreSQL server
+   createdb clusterjellyfin
+   createuser jellyfin
+   psql -c "GRANT ALL PRIVILEGES ON DATABASE clusterjellyfin TO jellyfin;"
+   psql -c "ALTER USER jellyfin WITH PASSWORD 'your-secure-password';"
+   ```
+   
+   **Option B: Use embedded PostgreSQL (requires CNPG):**
+   ```bash
+   # Install CloudNativePG operator first
+   kubectl apply -f https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.21/releases/cnpg-1.21.0.yaml
+   ```
+   ```yaml
+   # In your values.yaml, set:
+   postgresql:
+     enabled: true
+     instances: 3  # High availability cluster
+   ```
+
 ## Documentation
 
 - [COMPREHENSIVE_DOCUMENTATION.md](COMPREHENSIVE_DOCUMENTATION.md)

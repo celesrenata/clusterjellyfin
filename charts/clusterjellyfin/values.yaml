@@ -108,8 +108,21 @@ workers:
 
 # PostgreSQL configuration
 postgresql:
-  # Set to false to use external PostgreSQL
+  # Set to true to deploy CNPG PostgreSQL cluster
   enabled: false
+  instances: 3
+  database: "jellyfin"
+  username: "jellyfin"
+  storage:
+    size: "20Gi"
+    storageClass: ""
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "500m"
+    limits:
+      memory: "2Gi"
+      cpu: "2000m"
   external:
     host: ""
     port: 5432
