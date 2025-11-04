@@ -86,8 +86,6 @@ spec:
           esac
           SCRIPT_END
           chmod +x /shared/rffmpeg
-          # Create ffprobe as copy of rffmpeg
-          cp /shared/rffmpeg /shared/ffprobe
           echo "Init container completed successfully"
         volumeMounts:
         - name: shared-rffmpeg
@@ -102,7 +100,7 @@ spec:
         - name: JELLYFIN_PublishedServerUrl
           value: {{ .Values.jellyfin.publishedServerUrl | quote }}
         - name: JELLYFIN_FFMPEG
-          value: "/usr/local/bin/rffmpeg"
+          value: "/shared/rffmpeg"
         - name: JELLYFIN_POSTGRES_HOST
           valueFrom:
             secretKeyRef:
@@ -151,7 +149,7 @@ spec:
         - name: JELLYFIN_PublishedServerUrl
           value: "{{ .Values.jellyfin.publishedServerUrl }}"
         - name: JELLYFIN_FFMPEG
-          value: "/usr/local/bin/rffmpeg"
+          value: "/shared/rffmpeg"
         {{- if .Values.jellyfin.extraEnv }}
         {{- toYaml .Values.jellyfin.extraEnv | nindent 8 }}
         {{- end }}
@@ -174,12 +172,6 @@ spec:
         - name: rffmpeg-config
           mountPath: /config/rffmpeg.yml
           subPath: rffmpeg.yml
-        - name: shared-rffmpeg
-          mountPath: /usr/local/bin/rffmpeg
-          subPath: rffmpeg
-        - name: shared-rffmpeg
-          mountPath: /usr/local/bin/ffprobe
-          subPath: ffprobe
         - name: main-ssh-keys
           mountPath: /home/jellyfin/.ssh
           readOnly: true
