@@ -9,10 +9,7 @@ SSH_USER="jellyfin"
 
 # Check for validation flags
 case "${1:-}" in
-    "-version"|"-f"|"-formats"|"-codecs"|"-decoders"|"-encoders"|"-bsfs"|"-protocols"|"-filters"|"-pix_fmts"|"-layouts"|"-sample_fmts"|"-buildconf")
-        exec $LOCAL_FFMPEG "$@"
-        ;;
-    "")
+    ""|"-version"|"-f"|"-formats"|"-codecs"|"-decoders"|"-encoders"|"-bsfs"|"-protocols"|"-filters"|"-pix_fmts"|"-layouts"|"-sample_fmts"|"-buildconf")
         exec $LOCAL_FFMPEG "$@"
         ;;
     *)
