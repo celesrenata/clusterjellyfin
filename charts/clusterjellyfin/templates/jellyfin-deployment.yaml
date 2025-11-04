@@ -55,7 +55,7 @@ spec:
           #!/bin/bash
           
           # Local ffmpeg for validation
-          LOCAL_FFMPEG="/usr/bin/ffmpeg"
+          LOCAL_FFMPEG="/usr/lib/jellyfin-ffmpeg/ffmpeg"
           
           # Use service name for load balancing across workers
           WORKER_SERVICE="{{ include "clusterjellyfin.fullname" $ }}-workers"
