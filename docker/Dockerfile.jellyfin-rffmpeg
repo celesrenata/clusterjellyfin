@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y \
     python3-yaml \
     python3-psycopg2 \
     openssh-client \
+    jellyfin-ffmpeg7 \
     intel-media-va-driver \
     intel-gpu-tools \
     vainfo \
