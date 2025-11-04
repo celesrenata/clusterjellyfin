@@ -37,14 +37,14 @@ metadata:
   namespace: {{ .Release.Namespace }}
   labels:
     {{- include "clusterjellyfin.labels" . | nindent 4 }}
-  {{- with .Values.ingress.httpsAnnotations }}
   annotations:
+    {{- with .Values.ingress.httpsAnnotations }}
     {{- toYaml . | nindent 4 }}
+    {{- end }}
     # WebSocket and connection stability
     traefik.ingress.kubernetes.io/service.sticky.cookie: "true"
     traefik.ingress.kubernetes.io/service.sticky.cookie.name: "jellyfin-server"
     traefik.ingress.kubernetes.io/router.timeout: "300s"
-  {{- end }}
 spec:
   {{- if .Values.ingress.className }}
   ingressClassName: {{ .Values.ingress.className }}
