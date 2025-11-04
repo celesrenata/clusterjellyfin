@@ -28,17 +28,27 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg. V
 
 - Kubernetes cluster
 - Helm 3.x
+- **PostgreSQL database** (external, recommended for performance)
 - Storage solution (NFS server or dynamic provisioning)
 
 ### Installation
 
-1. **Add the Helm repository:**
+1. **Set up PostgreSQL database:**
+   ```bash
+   # Create database and user
+   createdb clusterjellyfin
+   createuser jellyfin
+   psql -c "GRANT ALL PRIVILEGES ON DATABASE clusterjellyfin TO jellyfin;"
+   psql -c "ALTER USER jellyfin WITH PASSWORD 'your-secure-password';"
+   ```
+
+2. **Add the Helm repository:**
    ```bash
    helm repo add clusterjellyfin https://celesrenata.github.io/clusterjellyfin
    helm repo update
    ```
 
-2. **Create your values file:**
+3. **Create your values file:**
    ```bash
    # Download example configuration
    curl -O https://raw.githubusercontent.com/celesrenata/clusterjellyfin/main/example-values.yaml
@@ -83,6 +93,17 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg. V
 | `jellyfin.storage.media.size` | Media storage size | `1Ti` |
 | `jellyfin.storage.cache.storageClass` | Storage class for cache | `longhorn` |
 | `jellyfin.storage.cache.size` | Cache storage size | `50Gi` |
+
+### PostgreSQL Configuration
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `postgresql.enabled` | Use embedded PostgreSQL | `false` |
+| `postgresql.external.host` | External PostgreSQL host | `""` |
+| `postgresql.external.port` | External PostgreSQL port | `5432` |
+| `postgresql.external.database` | Database name | `jellyfin` |
+| `postgresql.external.username` | Database username | `jellyfin` |
+| `postgresql.external.existingSecret` | Secret with PostgreSQL credentials | `""` |
 
 ### Hardware Acceleration
 
