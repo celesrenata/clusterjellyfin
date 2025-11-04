@@ -28,18 +28,27 @@ Distributed Jellyfin deployment with remote transcoding workers using rffmpeg. V
 
 - Kubernetes cluster
 - Helm 3.x
-- **PostgreSQL database** (external, recommended for performance)
+- **PostgreSQL database** (external recommended, or use embedded)
 - Storage solution (NFS server or dynamic provisioning)
 
 ### Installation
 
-1. **Set up PostgreSQL database:**
+1. **Set up PostgreSQL database (choose one):**
+   
+   **Option A: External PostgreSQL (recommended for production):**
    ```bash
-   # Create database and user
+   # Create database and user on your PostgreSQL server
    createdb clusterjellyfin
    createuser jellyfin
    psql -c "GRANT ALL PRIVILEGES ON DATABASE clusterjellyfin TO jellyfin;"
    psql -c "ALTER USER jellyfin WITH PASSWORD 'your-secure-password';"
+   ```
+   
+   **Option B: Use embedded PostgreSQL (simpler setup):**
+   ```yaml
+   # In your values.yaml, set:
+   postgresql:
+     enabled: true
    ```
 
 2. **Add the Helm repository:**
